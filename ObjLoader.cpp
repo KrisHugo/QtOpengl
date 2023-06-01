@@ -45,8 +45,11 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints, QVector<float> &
                 return str.toFloat();
             });
         }else if (dataType == "f"){
+            polyfacescount[strValues.size()]++;
             std::transform(strValues.begin(), strValues.end(), std::back_inserter(facesIndexs), [](QByteArray &str) {
                 QList<QByteArray> intStr = str.split('/');
+                // f 的存储格式有 v, v/t, v/t/n, v//n
+                // 先临时把索引存成-1, 当遇到的时候将之换算成默认的数值可能会比较好
                 if(intStr.size() > 3 || intStr.size() <= 0){
                     return std::make_tuple(intStr.first().toInt(), intStr.last().toInt(), -1);
                 }else if(intStr.size() == 2){
@@ -55,7 +58,6 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints, QVector<float> &
                     return std::make_tuple(intStr.first().toInt(), -1, -1);
                 }else{
                     if(intStr.at(1) == "") {
-                        qDebug() << "test int Str";
                         return std::make_tuple(intStr.first().toInt(), -1, intStr.last().toInt());
                     }
                 }
@@ -100,6 +102,9 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints, QVector<float> &
         nPoints << normalPoints.at((nIndex) * 3 + 1);
         nPoints << normalPoints.at((nIndex) * 3 + 2);
     }
+    //debug
+    qDebug() << polyfacescount;
+
     vertextPoints.clear();
     texturePoints.clear();
     normalPoints.clear();

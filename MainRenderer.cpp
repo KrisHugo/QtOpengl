@@ -60,7 +60,7 @@ RendererWidget::RendererWidget(QWidget *parent)
     , lampBuffer(QOpenGLBuffer::VertexBuffer)
 {
 
-    setFocusPolicy(Qt::StrongFocus);
+    setFocusPolicy(Qt::StrongFocus);//强制focus opengl widgets
     //构成主widget的子窗口
     setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     hide();
@@ -112,7 +112,7 @@ void RendererWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
-
+    //测试渲染效果的静态三维物体
     static constexpr QVector3D cubePositions[] = {
 //        QVector3D( 0.0f,  0.0f,  0.0f),
         QVector3D( 2.0f,  5.0f, -15.0f),
@@ -133,7 +133,6 @@ void RendererWidget::paintGL()
     }
     drawLamp();
 
-//    QString *str = new QString("D:\\GithubProjects\\QT\\3D-viewer\\QtOpengl\\resources\\TV\\1.obj");
     if(isLoad){
         drawModel();
     }
@@ -147,7 +146,6 @@ void RendererWidget::loadModel(QString &filePath){
 }
 
 void RendererWidget::drawModel(){
-//    QImage *img = new QImage(imgPath);
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     QMatrix4x4 vMatrix = camera.view();
     QVector3D position = QVector3D( 0.0f,  0.0f,  0.0f);
@@ -161,17 +159,20 @@ void RendererWidget::drawModel(){
     update();
 }
 
+void RendererWidget::unloadModel(){
+
+}
 
 void RendererWidget::slotTimeout()
 {
 //    qDebug() << "test";
     // rotate the obj
 //    angleX_ += 5;
-//    angleY += 5;
+    angleY += 5;
 //    anglZ_ += 5;
 //    QVector3D position3 = QVector3D( angleX_,  angleY,  anglZ_);
 //    drawCube(position3, 20);
-//    update();
+    update();
 }
 
 bool RendererWidget::eventFilter(QObject *obj, QEvent *event)

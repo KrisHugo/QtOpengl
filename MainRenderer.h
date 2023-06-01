@@ -20,6 +20,7 @@ public:
     RendererWidget(QWidget *parent = nullptr);
     ~RendererWidget();
     void loadModel(QString &filePath);
+    void unloadModel();
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;

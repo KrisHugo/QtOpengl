@@ -2,6 +2,10 @@
 #include "ObjLoader.h"
 #include <QDebug>
 #include <QOpenGLTexture>
+ObjRender::~ObjRender(){
+    vbo_.destroy();
+}
+
 void ObjRender::initsize(QString filename/*, QImage &textureImg*/)
 {
 
@@ -12,7 +16,7 @@ void ObjRender::initsize(QString filename/*, QImage &textureImg*/)
         return;
     }
     QVector<float> points;
-    points << vertPoints_ << normalPoints_ << texturePoints_ ;
+    points << vertPoints_ << texturePoints_ << normalPoints_ ;
 
 //    objVao.create();
 //    QOpenGLVertexArrayObject::Binder vaoBinder(&objVao);
@@ -61,16 +65,17 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.setUniformValue("light.diffuse", 0.5f, 0.5f, 0.5f); // darken the light a bit to fit the scene
     objProgram.setUniformValue("light.specular", 1.0f, 1.0f, 1.0f);
 
+
+    //position, normal, texture
     objProgram.enableAttributeArray(0);
     objProgram.enableAttributeArray(1);
     objProgram.enableAttributeArray(2);
+
     objProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat));//vpoints
-    objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.count() * sizeof(GLfloat), 3, 3 * sizeof(GLfloat));//npoints
-    objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.count() + texturePoints_.count()) * sizeof(GLfloat), 2, 2 * sizeof(GLfloat));//tpoints
-//    objTexture->bind(0);
+    objProgram.setAttributeBuffer(2, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat));//tpoints
+    objProgram.setAttributeBuffer(1, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat));//npoints
 
-//    QOpenGLVertexArrayObject::Binder vaoBinder(&objVao);
-
+    //triangle
     f->glDrawArrays(GL_TRIANGLES, 0, vertPoints_.count() / 3);
 
     //end here
