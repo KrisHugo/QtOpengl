@@ -6,4 +6,4 @@ void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
 GL_enum
 
-![](.\\README\\GLenum-1685638461647-1.png)
+<img src="./README/GLenum.png" style="zoom:100%;" />
