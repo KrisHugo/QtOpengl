@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>container.jpg</file>
+        <file>awesomeface.png</file>
+        <file>iphone-x-screens-status-bar.jpg</file>
+        <file>container2.png</file>
+        <file>container2_specular.png</file>
+    </qresource>
+</RCC>

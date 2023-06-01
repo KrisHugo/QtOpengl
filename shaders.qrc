@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>fsrc.frag</file>
+        <file>vsrc.vert</file>
+        <file>fsrc2.frag</file>
+        <file>vsrc2.vert</file>
+        <file>fcube.fsh</file>
+        <file>flamp.fsh</file>
+        <file>vcube.vsh</file>
+        <file>vlamp.vsh</file>
+    </qresource>
+</RCC>
