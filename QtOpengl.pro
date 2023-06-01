@@ -7,17 +7,19 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    MainRenderer.cpp \
+    ObjData.cpp \
     ObjLoader.cpp \
-    genericrender.cpp \
+    ObjRender.cpp \
     main.cpp \
-    renderer.cpp \
     widget.cpp \
     camera.cpp
 
 HEADERS += \
+    MainRenderer.h \
+    ObjData.h \
     ObjLoader.h \
-    genericrender.h \
-    renderer.h \
+    ObjRender.h \
     widget.h \
     camera.h
 

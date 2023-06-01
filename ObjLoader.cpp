@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QFile>
 
-bool ObjLoader::Load(QString fileName, QVector<float> &vPoints,QVector<float> &tPoints, QVector<float> &nPoints)
+bool ObjLoader::Load(QString fileName, QVector<float> &vPoints, QVector<float> &tPoints, QVector<float> &nPoints)
 {
     if (fileName.mid(fileName.lastIndexOf('.')) != ".obj"&&fileName.mid(fileName.lastIndexOf('.')) != ".OBJ")
     {
@@ -21,7 +21,7 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints,QVector<float> &t
         return false;
     }
 
-    QVector<float> vertextPoints,texturePoints,normalPoints;
+    QVector<float> vertextPoints, texturePoints, normalPoints;
     QVector<std::tuple<int,int,int>> facesIndexs;
     while (!objFile.atEnd()) {
         QByteArray lineData = objFile.readLine();
@@ -47,20 +47,22 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints,QVector<float> &t
         }else if (dataType == "f"){
             std::transform(strValues.begin(), strValues.end(), std::back_inserter(facesIndexs), [](QByteArray &str) {
                 QList<QByteArray> intStr = str.split('/');
-                if(intStr.size() == 2){
+                if(intStr.size() > 3 || intStr.size() <= 0){
                     return std::make_tuple(intStr.first().toInt(), intStr.last().toInt(), -1);
-                }
-                else if(intStr.size() == 1){
+                }else if(intStr.size() == 2){
+                    return std::make_tuple(intStr.first().toInt(), intStr.last().toInt(), -1);
+                }else if(intStr.size() == 1){
                     return std::make_tuple(intStr.first().toInt(), -1, -1);
-                }
-                else if(intStr.size() == 0){
-                    return std::make_tuple(-1, -1, -1);
+                }else{
+                    if(intStr.at(1) == "") {
+                        qDebug() << "test int Str";
+                        return std::make_tuple(intStr.first().toInt(), -1, intStr.last().toInt());
+                    }
                 }
                 return std::make_tuple(intStr.first().toInt(), intStr.at(1).toInt(), intStr.last().toInt());
 
             });
         }
-//        qDebug()<< vertextPoints.size() << "," << texturePoints.size() << ","  << normalPoints.size() << ","  << facesIndexs.size();
     }
 
     if (vertextPoints.size() != 0 && texturePoints.size() != 0 && normalPoints.size() != 0 && facesIndexs.size() != 0)
@@ -73,33 +75,30 @@ bool ObjLoader::Load(QString fileName, QVector<float> &vPoints,QVector<float> &t
         return false;
     }
 
-
+    //only extract the points which  in one of the faces, and throw the others.
     for(auto &verFaceInfo : facesIndexs){
         int vIndex = std::get<0>(verFaceInfo);
         int tIndex = std::get<1>(verFaceInfo);
         int nIndex = std::get<2>(verFaceInfo);
         if(vIndex < 0 || tIndex < 0 || nIndex < 0){
+//            qDebug() << "0:" <<  vertextPoints.at((vIndex) * 3) << texturePoints.at((tIndex) * 2) << normalPoints.at((nIndex) * 3);
             continue;
         }
-//        qDebug() << "test";
         int vPointSizes = vertextPoints.count() / 3;
-        int tPointSizes = texturePoints.count() / 3;
+        int tPointSizes = texturePoints.count() / 2;
         int nPointSizes = normalPoints.count() / 3;
-        if(vIndex * 3 + 2 < vPointSizes){
-            vPoints << vertextPoints.at((vIndex) * 3);
-            vPoints << vertextPoints.at((vIndex) * 3 + 1);
-            vPoints << vertextPoints.at((vIndex) * 3 + 2);
+        if(vIndex * 3 + 2 > vPointSizes || tIndex * 2 + 1 > tPointSizes || nIndex * 3 + 2 > nPointSizes){
+//            qDebug() << "outofbounds" << vertextPoints.at((vIndex) * 3) << texturePoints.at((tIndex) * 2) << normalPoints.at((nIndex) * 3);
+            continue;
         }
-        if(tIndex * 3 + 2 < tPointSizes){
-            tPoints << texturePoints.at((tIndex) * 3);
-            tPoints << texturePoints.at((tIndex) * 3 + 1);
-            tPoints << texturePoints.at((tIndex) * 3 + 2);
-        }
-        if(nIndex * 3 + 2 < nPointSizes){
-            nPoints << normalPoints.at((nIndex) * 3);
-            nPoints << normalPoints.at((nIndex) * 3 + 1);
-            nPoints << normalPoints.at((nIndex) * 3 + 2);
-        }
+        vPoints << vertextPoints.at((vIndex) * 3);
+        vPoints << vertextPoints.at((vIndex) * 3 + 1);
+        vPoints << vertextPoints.at((vIndex) * 3 + 2);
+        tPoints << texturePoints.at((tIndex) * 2);
+        tPoints << texturePoints.at((tIndex) * 2 + 1);
+        nPoints << normalPoints.at((nIndex) * 3);
+        nPoints << normalPoints.at((nIndex) * 3 + 1);
+        nPoints << normalPoints.at((nIndex) * 3 + 2);
     }
     vertextPoints.clear();
     texturePoints.clear();

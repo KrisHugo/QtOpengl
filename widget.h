@@ -9,7 +9,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileDialog>
-#include "renderer.h"
+#include "MainRenderer.h"
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -21,17 +21,20 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+
+//    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     int loadFileFlag;
     QMenuBar *mainMenuBar;
     QMenu *mainMenu;
     QAction *openAction;
     QAction *newAction;
-    QToolBar *compsBoxToolBar;
+//    QToolBar *compsBoxToolBar;
     QLabel *listComp;
     QLabel *lbl;
-    QTextEdit *txtTipComp;
-    QLabel *renderName;
+    QLabel *renderDetail;
+    QLabel *renderStatus;
     RendererWidget *renderer;
 
 

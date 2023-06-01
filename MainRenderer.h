@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef MAINRENDERER_H
+#define MAINRENDERER_H
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLFunctions_3_3_Core>
@@ -8,7 +8,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QScopedPointer>
 #include <QTimer>
-#include "genericrender.h"
+#include "ObjRender.h"
 #include "camera.h"
 class QOpenGLTexture;
 
@@ -19,9 +19,7 @@ class RendererWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 public:
     RendererWidget(QWidget *parent = nullptr);
     ~RendererWidget();
-    void loadModel(QString filePath);
-
-
+    void loadModel(QString &filePath);
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -31,11 +29,14 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+
 private:
     bool isLoad;
-    GenericRender render_;
+    ObjRender objRender;
     QTimer tm_;
-    QVector3D cameraLocation_,lightLocation_;
+    QVector3D cameraLocation_, lightLocation_;
     QMatrix4x4 pMatrix_;
     qreal angleX_,angleY,anglZ_;
 
@@ -46,9 +47,9 @@ private:
     void initializeShaders();
     QOpenGLTexture *initializeTexture(const QString &path);
 
-
     void drawCube(const QVector3D &position, float angle);
     void drawLamp();
+    void drawModel();
 
     QOpenGLBuffer cubeBuffer;
     QOpenGLBuffer lampBuffer;
@@ -65,4 +66,4 @@ private slots:
     void slotTimeout();
 
 };
-#endif // RENDERER_H
+#endif // MAINRENDERER_H

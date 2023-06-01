@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "MainRenderer.h"
 
 #include <QImage>
 #include <QOpenGLTexture>
@@ -7,7 +7,6 @@
 #include <QKeyEvent>
 #include <QtMath>
 #include <QElapsedTimer>
-
 
 static const float vertices[] = {
     // positions          // normals           // texture coords
@@ -60,10 +59,16 @@ RendererWidget::RendererWidget(QWidget *parent)
     , cubeBuffer(QOpenGLBuffer::VertexBuffer)
     , lampBuffer(QOpenGLBuffer::VertexBuffer)
 {
+
+    setFocusPolicy(Qt::StrongFocus);
     //构成主widget的子窗口
     setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     hide();
     isLoad = false;
+    installEventFilter(this);
+
+    connect(&tm_, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+    tm_.start(30);
 }
 
 RendererWidget::~RendererWidget()
@@ -74,11 +79,11 @@ RendererWidget::~RendererWidget()
 
 void RendererWidget::initializeGL()
 {
-//    initializeOpenGLFunctions();
-//    showNormal();
-//    setGeometry(0, 0, 800, 600);
 
     initializeOpenGLFunctions();
+    showNormal();
+    setGeometry(0, 0, 800, 600);
+
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -88,35 +93,28 @@ void RendererWidget::initializeGL()
 
     container = initializeTexture(":/container2.png");
     container_specular = initializeTexture(":/container2_specular.png");
+
+//    lightLocation_.setX(10);
+//    lightLocation_.setY(10);
+//    lightLocation_.setZ(1);
 }
 
 void RendererWidget::resizeGL(int w, int h)
 {
     camera.setViewport(w, h);
     glViewport(0, 0, w, h);
+
+    pMatrix_.setToIdentity();
+    pMatrix_.perspective(45,float(w)/h,0.01f,100.0f);
 }
 
 void RendererWidget::paintGL()
 {
-//    QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
-//    f->glClearColor(0.0f,0.0f,0.0f,1.0f);
-//    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    QMatrix4x4 vMatrix;
-//    vMatrix.lookAt(cameraLocation_, QVector3D(0,0,0), QVector3D(0,1,0));
-
-//    QMatrix4x4 mMatrix;
-//    mMatrix.translate(0, -0.8);
-//    //    mMatrix.rotate(angleX_,1,0,0);
-//    mMatrix.rotate(angleY, 0, 1, 0);
-//    //    mMatrix.rotate(anglZ_,0,0,1);
-//    render_.render(f,pMatrix_,vMatrix,mMatrix,cameraLocation_,lightLocation_);
-//    update();
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
 
     static constexpr QVector3D cubePositions[] = {
-        QVector3D( 0.0f,  0.0f,  0.0f),
+//        QVector3D( 0.0f,  0.0f,  0.0f),
         QVector3D( 2.0f,  5.0f, -15.0f),
         QVector3D(-1.5f, -2.2f, -2.5f),
         QVector3D(-3.8f, -2.0f, -12.3f),
@@ -135,34 +133,71 @@ void RendererWidget::paintGL()
     }
     drawLamp();
 
+//    QString *str = new QString("D:\\GithubProjects\\QT\\3D-viewer\\QtOpengl\\resources\\TV\\1.obj");
+    if(isLoad){
+        drawModel();
+    }
     update();
 }
 
-void RendererWidget::loadModel(QString filePath){
-    QImage *img = new QImage(":/awesomeface.png");
-    render_.initsize(filePath, *img);
-    cameraLocation_.setX(0);
-    cameraLocation_.setY(0);
-    cameraLocation_.setZ(3);
-    lightLocation_.setX(10);
-    lightLocation_.setY(10);
-    lightLocation_.setZ(1);
+void RendererWidget::loadModel(QString &filePath){
+
+    objRender.initsize(filePath);
     isLoad = true;
-    connect(&tm_,SIGNAL(timeout()),this,SLOT(slotTimeout()));
-    tm_.start(30);
+}
+
+void RendererWidget::drawModel(){
+//    QImage *img = new QImage(imgPath);
+    QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
+    QMatrix4x4 vMatrix = camera.view();
+    QVector3D position = QVector3D( 0.0f,  0.0f,  0.0f);
+    QMatrix4x4 mMatrix;
+    mMatrix.translate(position);
+    //    mMatrix.rotate(angleX_,1,0,0);
+    mMatrix.rotate(angleY, 0, 1, 0);
+    //    mMatrix.rotate(anglZ_,0,0,1);
+
+    objRender.render(f, pMatrix_, vMatrix, mMatrix, camera.position(), lightPos);
     update();
 }
+
 
 void RendererWidget::slotTimeout()
 {
-    angleX_ += 5;
-    angleY += 5;
-    anglZ_ += 5;
-    update();
+//    qDebug() << "test";
+    // rotate the obj
+//    angleX_ += 5;
+//    angleY += 5;
+//    anglZ_ += 5;
+//    QVector3D position3 = QVector3D( angleX_,  angleY,  anglZ_);
+//    drawCube(position3, 20);
+//    update();
+}
+
+bool RendererWidget::eventFilter(QObject *obj, QEvent *event)
+{
+
+    if (event->type() == QEvent::KeyPress)
+    {
+        qDebug() << event->type();
+        return QWidget::eventFilter(obj, event);
+    }
+    else if(event->type() == QEvent::KeyRelease)
+    {
+        qDebug() << event->type();
+        return QWidget::eventFilter(obj, event);
+    }
+    else
+    {
+        return QWidget::eventFilter(obj, event);
+    }
+//    return QWidget::eventFilter(obj, event);
 }
 
 void RendererWidget::keyPressEvent(QKeyEvent *event)
 {
+    qDebug() << event->key();
+
     switch (event->key()) {
     case Qt::Key_W:
         camera.move(Camera::MoveDirection::Direction_Forward);
@@ -184,6 +219,8 @@ void RendererWidget::keyPressEvent(QKeyEvent *event)
 
 void RendererWidget::keyReleaseEvent(QKeyEvent *event)
 {
+    qDebug() << event->key();
+
     switch (event->key()) {
     case Qt::Key_W:
         camera.move(Camera::MoveDirection::Direction_Forward, false);
@@ -203,6 +240,7 @@ void RendererWidget::keyReleaseEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
+
 void RendererWidget::mouseMoveEvent(QMouseEvent *event)
 {
     static QPointF lastPos = event->pos();
@@ -218,7 +256,11 @@ void RendererWidget::mouseMoveEvent(QMouseEvent *event)
     yoffset *= sensitivity;
 
     camera.rotate(xoffset, yoffset);
+
+
     QWidget::mouseMoveEvent(event);
+
+
 }
 
 void RendererWidget::wheelEvent(QWheelEvent *event)
@@ -266,6 +308,12 @@ void RendererWidget::initializeLampGeometry()
 
 void RendererWidget::initializeShaders()
 {
+    if (!objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vcube.vsh")
+        || !objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/fcube.fsh")
+        || !objRender.objProgram.link()) {
+        qCritical() << "Shader add error:" << cubeProgram.log();
+        close();
+    }
     if (!cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vcube.vsh")
         || !cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/fcube.fsh")
         || !cubeProgram.link()) {

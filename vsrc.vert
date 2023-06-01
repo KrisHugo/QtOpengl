@@ -14,24 +14,24 @@ void pointLight(in vec3 normal, inout vec4 ambient, inout vec4 diffuse, inout ve
     ambient = lightAmbient;
 
     vec3 normalTarget = aPosition + normal;
-    vec3 newNormal = normalize(vec3(uMMatrix * vec4(normalTarget, 1)) - vec3(uMMatrix * vec4(aPosition, 1)));
-    vec3 eye = normalize(uCamera - vec3(uMMatrix * vec4(aPosition,1)));
-    vec3 vp = normalize(uLightLocation - vec3(uMMatrix * vec4(aPosition,1)));
+    vec3 newNormal = normalize(vec4(uMMatrix * vec4(normalTarget, 1)).xyz - vec4(uMMatrix * vec4(aPosition, 1)).xyz);
+    vec3 eye = normalize(uCamera - vec4(uMMatrix * vec4(aPosition,1)).xyz);
+    vec3 vp = normalize(uLightLocation - vec4(uMMatrix * vec4(aPosition,1)).xyz);
     vec3 halfVector = normalize(eye + vp);
 
-    float nDotViewPotision = max(0.0,dot(newNormal,vp));
+    float nDotViewPotision = max(0.0, dot(newNormal, vp));
     diffuse = lightDiffuse * nDotViewPotision;
 
-    float nDotViewHalfVector = dot(newNormal,halfVector);
-    float powerFactor = max(0.0,pow(nDotViewHalfVector,shininess));
+    float nDotViewHalfVector = dot(newNormal, halfVector);
+    float powerFactor = max(0.0,pow(nDotViewHalfVector, shininess));
     specular = lightSpecular * powerFactor;
 }
 
 void main(void)
 {
-    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aPosition,1);
-    vec4 ambient = vec4(0.0,0.0,0.0,0.0),diffuse = vec4(0.0,0.0,0.0,0.0),specular = vec4(0.0,0.0,0.0,0.0);
-    pointLight(aNormal, ambient, diffuse, specular, vec4(0.6,0.6,0.6,1.0), vec4(0.8,0.8,0.8,1.0), vec4(0.9,0.9,0.9,1), 50);
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aPosition, 1);
+    vec4 ambient = vec4(0.0,0.0,0.0,0.0), diffuse = vec4(0.0,0.0,0.0,0.0), specular = vec4(0.0,0.0,0.0,0.0);
+    pointLight(aNormal, ambient, diffuse, specular, vec4(0.6, 0.6, 0.6, 1.0), vec4(0.8, 0.8, 0.8, 1.0), vec4(0.9, 0.9, 0.9, 1), 50.0);
     vAmbient = ambient;
     vDiffuse = diffuse;
     vSpecular = specular;
