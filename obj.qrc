@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/resources"/>
+    <qresource prefix="/">
+        <file>resources/Iphone_seceond_version_finished.obj</file>
+    </qresource>
+</RCC>

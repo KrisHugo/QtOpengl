@@ -140,7 +140,7 @@ void RendererWidget::paintGL()
 
 void RendererWidget::loadModel(QString filePath){
     QImage *img = new QImage(":/awesomeface.png");
-    render_.initsize("D:\\GithubProjects\\QT\\3D-viewer\\resources\\iphonex\\Iphone_seceond_version_finished.obj", *img);
+    render_.initsize(filePath, *img);
     cameraLocation_.setX(0);
     cameraLocation_.setY(0);
     cameraLocation_.setZ(3);
