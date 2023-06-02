@@ -4,10 +4,10 @@
 
 #include <QVector>
 #include <QHash>
-
+#include "ObjData.h"
 class ObjLoader{
 public:
-    bool Load(QString fileName, QVector<float> &vPoints,QVector<float> &tPoints,QVector<float> &nPoints);
+    bool Load(QString fileName, ObjData &objdata);
 
 private:
     QHash<int, int> polyfacescount;

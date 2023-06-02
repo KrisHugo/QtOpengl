@@ -3,6 +3,8 @@
 #include <QHBoxLayout>
 #include <QEvent>
 #include <QOpenGLDebugLogger>
+#include <QDebug>
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
@@ -10,7 +12,7 @@ Widget::Widget(QWidget *parent)
 
 
     loadFileFlag = 0;
-    this->resize(1080, 900);
+    this->resize(1200, 900);
 
     //2.0 MainMenuBar
     mainMenuBar = new QMenuBar();
@@ -45,12 +47,16 @@ Widget::Widget(QWidget *parent)
     //2.2.1 文本提示框
     //2.3 OpenGL renderer
     renderer = new RendererWidget();
-    renderer->setMinimumWidth(800);
-    renderStatus = new QLabel("尚未打开文件");
-    renderStatus->setMaximumWidth(200);
-    renderDetail = new QLabel();
-    renderDetail->setMaximumWidth(200);
-    renderDetail->setWordWrap(true);
+    renderer->setMinimumWidth(900);
+    fileStatus = new QLabel("尚未打开文件");
+    fileStatus->setMinimumWidth(350);
+    fileStatus->setMaximumWidth(500);
+    //下拉多级列表QTreeWidgetItem
+    dataView = new TreeView();
+    dataView->setMinimumWidth(350);
+    dataView->setMaximumWidth(500);
+    dataView->setWordWrap(true);
+    dataView->setHeaderHidden(true);
     //2.4 布局
 //    QVBoxLayout *leftLayout = new QVBoxLayout();
     //leftLayout->addWidget(compsBoxToolBar);//把工具栏作为一个widget添加到布局中
@@ -78,8 +84,8 @@ Widget::Widget(QWidget *parent)
     baseLayout->addLayout(mainLayout);
     mainLayout->addWidget(renderer);
     mainLayout->addLayout(rightLayout);
-    rightLayout->addWidget(renderStatus);
-    rightLayout->addWidget(renderDetail);
+    rightLayout->addWidget(fileStatus);
+    rightLayout->addWidget(dataView, 10000);
 
 //    baseLayout->setAlignment(Qt::AlignLeft | Qt::AlignCenter);
     //2.5 应用布局
@@ -120,9 +126,19 @@ void Widget::SelectFile(){
         if(objPaths.size() > 0)
         {
 //            txtTipComp->append(QString::number(loadStats));
-            renderStatus->setText("现在已打开：" + objPaths[0]);
+            fileStatus->setText("现在已打开：" + objPaths[0]);
             loadFileFlag = 1;
-            renderer->loadModel(objPaths[0]);
+            ObjLoader objLoader;
+            if(objLoader.Load(objPaths[0], loadedObj))
+            {
+                //load on detail
+                loadOnDetail(loadedObj);
+                renderer->loadModel(loadedObj);
+            }
+            else{
+                qCritical("Load Error");
+                close();
+            }
 //            QFileDialog *imgfile = new QFileDialog(this);
 //            imgfile->setWindowTitle("选择贴图文件");
 //            imgfile->setNameFilter("*.png");
@@ -148,10 +164,115 @@ void Widget::SelectFile(){
         }
         else
         {
-            renderStatus->setText("未获取到文件路径");
+            fileStatus->setText("未获取到文件路径");
         }
     }
     else{
-        renderStatus->setText("文件获取失败");
+        fileStatus->setText("文件获取失败");
     }
 }
+
+bool Widget::loadOnDetail(ObjData &objData){
+    //Top
+    QTreeWidgetItem *rootItem = new QTreeWidgetItem();
+    rootItem->setText(0, "file:" + objData.file);
+    rootItem->setCheckState(0, Qt::Unchecked);
+    rootItem->setData(0, m_STypeRole, NT_RootObj);
+    dataView->addTopLevelItem(rootItem);
+    //Obj
+//    qDebug() << "OBJ:" << objData.objects.size();
+    foreach (Obj obj, objData.objects)
+    {
+        QTreeWidgetItem *objItem = new QTreeWidgetItem();
+        objItem->setText(0, "o:" + obj.objName + "(" + QString::number(obj.groups.size()) + ")");
+        objItem->setFlags(objItem->flags() | Qt::ItemIsUserCheckable);
+        objItem->setCheckState(0, Qt::Unchecked);
+        objItem->setData(0, m_STypeRole, NT_Obj);
+        rootItem->addChild(objItem);
+        //Group
+//        qDebug() << obj.objName << ":" << obj.groups.size();
+        foreach (Group group, obj.groups)
+        {
+            QTreeWidgetItem *groupItem = new QTreeWidgetItem();
+            groupItem->setText(0, "g:" + group.uid.toString() + "[" + group.matrial + "](" + QString::number(group.facets.size()) + ")");
+            groupItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+            groupItem->setCheckState(0, Qt::Unchecked);
+            groupItem->setData(0, m_STypeRole, NT_Group);
+            objItem->addChild(groupItem);
+            //Facets
+//            qDebug() << group.matrial << ":" << group.facets.size();
+            for (int i = 0; i < group.facets.size(); i++){
+                QVector<std::tuple<int, int, int>> facet = group.facets[i];
+                QTreeWidgetItem *facetItem = new QTreeWidgetItem();
+                facetItem->setText(0, "f:" + QString::number(i));
+                facetItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+                facetItem->setCheckState(0, Qt::Unchecked);
+                facetItem->setData(0, m_STypeRole, NT_Facets);
+                groupItem->addChild(facetItem);
+                //Node: vertex, normal vertex, texture vectex
+//                qDebug() << i << ":" << facet.size();
+                for(int j = 0; j < facet.size(); j++){
+                    std::tuple<int, int, int> node = facet[j];
+                    QTreeWidgetItem *nodeItem = new QTreeWidgetItem();
+                    nodeItem->setText(0, "N:" + QString::number(j));
+                    nodeItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+                    nodeItem->setCheckState(0, Qt::Unchecked);
+                    nodeItem->setData(0, m_STypeRole, NT_Node);
+                    facetItem->addChild(nodeItem);
+
+                    int vindex = std::get<0>(node);
+                    int tindex = std::get<1>(node);
+                    int nindex = std::get<2>(node);
+//                    qDebug() << vindex << "," << nindex << "," << tindex;
+//                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
+                    QTreeWidgetItem *vItem = new QTreeWidgetItem();
+                    vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints[vindex - 1]));
+                    vItem->setFlags(groupItem->flags());
+                    vItem->setData(0, m_STypeRole, NT_ENode);
+                    nodeItem->addChild(vItem);
+//                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
+                    QTreeWidgetItem *tItem = new QTreeWidgetItem();
+                    tItem->setText(0, "t:" + Vector2D2String(objData.tPoints[tindex - 1]));
+                    tItem->setFlags(groupItem->flags());
+                    tItem->setData(0, m_STypeRole, NT_ENode);
+                    nodeItem->addChild(tItem);
+//                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
+                    QTreeWidgetItem *nItem = new QTreeWidgetItem();
+                    nItem->setText(0, "n:" + Vector3D2String(objData.nPoints[nindex - 1]));
+                    nItem->setFlags(groupItem->flags());
+                    nItem->setData(0, m_STypeRole, NT_ENode);
+                    nodeItem->addChild(nItem);
+                }
+            }
+        }
+    }
+    dataView->expandAll();  //展开所有节点
+
+//    dataDetail->clear();
+//    QVector<QTreeWidgetItem> structures();
+//    QTreeWidgetItem *item = new QTreeWidgetItem(dataDetail);
+//    item->setText(0, tr("Cities"));
+//    structures->append(&item);
+//    renderDetail->update();
+    return true;
+}
+
+QString Widget::Vector3D2String(QVector3D vec3){
+    return QString("(%1,%2,%3)").arg(QString::number(vec3.x()), QString::number(vec3.y()), QString::number(vec3.z()));
+}
+QString Widget::Vector2D2String(QVector2D vec2){
+    return QString("(%1,%2)").arg(QString::number(vec2.x()), QString::number(vec2.y()));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

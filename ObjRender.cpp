@@ -1,20 +1,18 @@
 #include "ObjRender.h"
-#include "ObjLoader.h"
+//#include "ObjLoader.h"
 #include <QDebug>
 #include <QOpenGLTexture>
 ObjRender::~ObjRender(){
     vbo_.destroy();
 }
 
-void ObjRender::initsize(QString filename/*, QImage &textureImg*/)
+void ObjRender::initsize(ObjData &objdata)
 {
-
-    ObjLoader objModelLoader;
-    objModelLoader.Load(filename, vertPoints_, texturePoints_, normalPoints_);
-    if(vertPoints_.size() <= 0 ||texturePoints_.size() <= 0 || normalPoints_.size() <= 0){
+    if(objdata.vPoints.size() <= 0 ||objdata.nPoints.size() <= 0 || objdata.tPoints.size() <= 0){
         qDebug("Load failed");
         return;
     }
+    //这里载入points
     QVector<float> points;
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
 

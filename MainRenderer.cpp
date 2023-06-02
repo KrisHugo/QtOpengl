@@ -139,10 +139,13 @@ void RendererWidget::paintGL()
     update();
 }
 
-void RendererWidget::loadModel(QString &filePath){
-
-    objRender.initsize(filePath);
+void RendererWidget::loadModel(ObjData &objData){
+    objRender.initsize(objData);
     isLoad = true;
+}
+
+void RendererWidget::unloadModel(){
+
 }
 
 void RendererWidget::drawModel(){
@@ -159,9 +162,6 @@ void RendererWidget::drawModel(){
     update();
 }
 
-void RendererWidget::unloadModel(){
-
-}
 
 void RendererWidget::slotTimeout()
 {

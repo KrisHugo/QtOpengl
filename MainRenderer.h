@@ -19,7 +19,7 @@ class RendererWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 public:
     RendererWidget(QWidget *parent = nullptr);
     ~RendererWidget();
-    void loadModel(QString &filePath);
+    void loadModel(ObjData &objdata);
     void unloadModel();
 protected:
     void initializeGL() override;

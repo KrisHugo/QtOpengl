@@ -13,7 +13,7 @@ class ObjRender
 public:
     ObjRender() = default;
     ~ObjRender();
-    void initsize(QString filename/*,QImage &textureImg*/);
+    void initsize(ObjData &objData);
     void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QMatrix4x4 &mMatrix, QVector3D cameraLocation, QVector3D lightCation);
     QOpenGLShaderProgram objProgram;
 private:
