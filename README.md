@@ -25,8 +25,8 @@ class ObjModel{
   vector<vec2> tpoints;
   vector<vec3> npoints;
   vector<string> obj;
-  unordered_map<string, uid> facetsInObj; //for modifing a whole part of a objModel.
-  unordered_map<int, uid> facetsInSize; //for rendering the whole objModel on Screen by opengl functions correctly.
+  unordered_map<string, vector<uid>> facetsInObj; //for modifing a whole part of a objModel.
+  unordered_map<int, vector<uid>> facetsInSize; //for rendering the whole objModel on Screen by opengl functions correctly.
   //... a obj model might be more complex, such as: smooth, mtl, etc. and I will and be willing to fix all of them to build this project after I finish my current emergent works.
   // texture for rendering correct and comfortable for viewers.
 }
