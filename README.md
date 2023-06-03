@@ -32,6 +32,8 @@ class ObjModel{
 }
 
 ```
+- render polygon : using indics buffer and while we loaded the multi-vertex facet, we transform the orginal indices to the indices that opengl can draw the facet as plenty triangles combined.
+  - for example: a rectangle can be drawed as two right triangle.
 ## To fix: ReadFile
 while I was trying to read each line of a obj file, I realize at the end of a line, there might be "\r\n" or "\n" which we need to remove it, but I just simply remove the last byte of each line rather than set a reg to remove, and it might cause some problem.
 
