@@ -3,7 +3,7 @@
 ## for render polygon currectly, we need to know:
 
 void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei count)
-
+void QOpenGLFucntions::glDrawIndices()
 GL_enum : see in "./Readme/GL_enum.jpg"
 
 
