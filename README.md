@@ -10,10 +10,14 @@ GL_enum : see in "./Readme/GL_enum.jpg"
 
 <!-- <img src="./README/GLenum.png" style="zoom:100%;" /> -->
 
+## 针对被渲染物体的整体控制思路
+- 每个顶点在加入vertex shader中渲染时, 需要计算顶点的实际渲染坐标, 可以通过输入四个参数进行控制: projection, view, viewPos, model.
+- 其中projection和view以及viewPos(或者可以直接说camera.position)控制3D物体渲染到摄像头上的2D投影坐标, model是每个顶点所归属的3d模型的中心位置, 四个参数与顶点vertex的属性运算之后, 就可以确定实际渲染的点在3d空间中的位置，以及正确的渲染在摄像机的投影位置.
+
 ## To-do
 - optimize the structure of a obj model load on memory
   - save facets with dictionary to categorize the facets by its vPoints count.
-
+- 针对一个模型的一部分或者obj进行单独操作应该如何处理? 可能必须在facet属性中记录所属的obj或group, 同时由于模型之间是相连的, 实际要操作的不是facet的indices而是indices指向的vertex属性, 所以只要修改vertex的数据, 整个部分就可以直接被移动, 旋转, 缩放, 而不需要顾虑与其他部分的链接问题.
 
 ```c++
 class facets{
