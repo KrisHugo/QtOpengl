@@ -7,13 +7,13 @@
 void QOpenGLFunctions::glDrawArrays(
          GLenum mode, 
          GLint first, 
-         GLsizei count)
+         GLsizei count);
 //使用indices buffer作为vertex buffer中顶点缓存渲染顺序的渲染方法
 void QOpenGLFunctions::glDrawElements(
          GLenum  mode,
          GLsizei count,
          GLenum  type,
-   const GLvoid  *indices)
+   const GLvoid  *indices);
 ```
 
 GL_enum : see in "./Readme/GL_enum.jpg"
