@@ -1,6 +1,6 @@
 # QtOpengl
 
-## for render polygon currectly, we need to know:
+## for render polygon correctly, we need to know:
 ```c++
 //In QT
 //直接使用vertex buffer渲染的方法
