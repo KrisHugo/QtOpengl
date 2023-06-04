@@ -1,9 +1,20 @@
 # QtOpengl
 
 ## for render polygon currectly, we need to know:
-
-void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei count)
-
+```c++
+//In QT
+//直接使用vertex buffer渲染的方法
+void QOpenGLFunctions::glDrawArrays(
+         GLenum mode, 
+         GLint first, 
+         GLsizei count)
+//使用indices buffer作为vertex buffer中顶点缓存渲染顺序的渲染方法
+void QOpenGLFunctions::glDrawElements(
+         GLenum  mode,
+         GLsizei count,
+         GLenum  type,
+   const GLvoid  *indices)
+```
 
 GL_enum : see in "./Readme/GL_enum.jpg"
 
