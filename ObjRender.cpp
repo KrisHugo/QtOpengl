@@ -14,6 +14,7 @@ void ObjRender::initsize(ObjData &objdata)
     }
     //这里载入points
     QVector<float> points;
+
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
 
 //    objVao.create();
@@ -68,10 +69,13 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.enableAttributeArray(0);
     objProgram.enableAttributeArray(1);
     objProgram.enableAttributeArray(2);
-
+    //vertex buffer
     objProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat));//vpoints
-    objProgram.setAttributeBuffer(2, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat));//tpoints
-    objProgram.setAttributeBuffer(1, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat));//npoints
+    objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat));//tpoints
+    objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat));//npoints
+
+
+    //indices buffer
 
     //triangle
     f->glDrawArrays(GL_TRIANGLES, 0, vertPoints_.count() / 3);

@@ -49,21 +49,33 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
         }
         else if (dataType == "v"){
             if(strValues.size() == 3){
-                objData.vPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
+//                objData.vPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
+                std::transform(strValues.begin(), strValues.end(),
+                               std::back_inserter(objData.vPoints), [](QByteArray &str) {
+                    return str.toFloat();
+                });
             }
             else{
                 qDebug() << "vPoints Load Error";
             }
         }else if (dataType == "vt"){
             if(strValues.size() == 2){
-                objData.tPoints.push_back(QVector2D(strValues[0].toFloat(), strValues[1].toFloat()));
+//                objData.tPoints.push_back(QVector2D(strValues[0].toFloat(), strValues[1].toFloat()));
+                std::transform(strValues.begin(), strValues.end(),
+                               std::back_inserter(objData.tPoints), [](QByteArray &str) {
+                    return str.toFloat();
+                });
             }
             else{
                 qDebug() << "tPoints Load Error";
             }
         }else if (dataType == "vn"){
             if(strValues.size() == 3){
-                objData.nPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
+//                objData.nPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
+                std::transform(strValues.begin(), strValues.end(),
+                               std::back_inserter(objData.nPoints), [](QByteArray &str) {
+                    return str.toFloat();
+                });
             }
             else{
                 qDebug() << "nPoints Load Error";

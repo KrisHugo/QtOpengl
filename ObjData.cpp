@@ -3,9 +3,9 @@
 ObjData::ObjData()
 {
     uid = QUuid();
-    vPoints = QVector<QVector3D>();
-    nPoints = QVector<QVector3D>();
-    tPoints = QVector<QVector2D>();
+    vPoints = QVector<float>();
+    nPoints = QVector<float>();
+    tPoints = QVector<float>();
     objects = QVector<QString>();
     facetIndexesInObj = QHash<QString, QVector<int>>();
     facetIndexesInSize = QHash<int, QVector<int>>();

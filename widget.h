@@ -36,8 +36,8 @@ public:
 //    bool eventFilter(QObject *obj, QEvent *event) override;
 protected:
     bool loadOnDetail(ObjData &objData);
-    QString Vector3D2String(QVector3D vec3);
-    QString Vector2D2String(QVector2D vec2);
+    QString Vector3D2String(QVector<float> &points, int index);
+    QString Vector2D2String(QVector<float> &points, int index);
 
 private:
     const static int m_STypeRole = Qt::UserRole;

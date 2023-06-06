@@ -215,19 +215,19 @@ bool Widget::loadOnDetail(ObjData &objData){
                 //                    qDebug() << vindex << "," << nindex << "," << tindex;
                 //                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
                 QTreeWidgetItem *vItem = new QTreeWidgetItem();
-                vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints[vindex - 1]));
+                vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints, 3 * (vindex - 1)));
                 vItem->setFlags(nodeItem->flags());
                 vItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(vItem);
                 //                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
                 QTreeWidgetItem *tItem = new QTreeWidgetItem();
-                tItem->setText(0, "t:" + Vector2D2String(objData.tPoints[tindex - 1]));
+                tItem->setText(0, "t:" + Vector2D2String(objData.tPoints, 2 * (tindex - 1)));
                 tItem->setFlags(nodeItem->flags());
                 tItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(tItem);
                 //                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
                 QTreeWidgetItem *nItem = new QTreeWidgetItem();
-                nItem->setText(0, "n:" + Vector3D2String(objData.nPoints[nindex - 1]));
+                nItem->setText(0, "n:" + Vector3D2String(objData.nPoints, 3 * (nindex - 1)));
                 nItem->setFlags(nodeItem->flags());
                 nItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(nItem);
@@ -302,11 +302,11 @@ bool Widget::loadOnDetail(ObjData &objData){
     return true;
 }
 
-QString Widget::Vector3D2String(QVector3D vec3){
-    return QString("(%1,%2,%3)").arg(QString::number(vec3.x()), QString::number(vec3.y()), QString::number(vec3.z()));
+QString Widget::Vector3D2String(QVector<float> &points, int index){
+    return QString("(%1,%2,%3)").arg(QString::number(points[index]), QString::number(points[index + 1]), QString::number(points[index + 2]));
 }
-QString Widget::Vector2D2String(QVector2D vec2){
-    return QString("(%1,%2)").arg(QString::number(vec2.x()), QString::number(vec2.y()));
+QString Widget::Vector2D2String(QVector<float> &points, int index){
+    return QString("(%1,%2)").arg(QString::number(points[index]), QString::number(points[index + 1]));
 }
 
 

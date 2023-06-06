@@ -101,9 +101,9 @@ public:
     QUuid uid;
     QString file;
 
-    QVector<QVector3D> vPoints;
-    QVector<QVector2D> tPoints;
-    QVector<QVector3D> nPoints;
+    QVector<float> vPoints;
+    QVector<float> tPoints;
+    QVector<float> nPoints;
     QVector<QString> objects;
     QVector<facets> facets;
     QHash<QString, QVector<int>> facetIndexesInObj; //for modifing a whole part of a objModel.
