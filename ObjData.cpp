@@ -2,10 +2,13 @@
 
 ObjData::ObjData()
 {
+    uid = QUuid();
     vPoints = QVector<QVector3D>();
     nPoints = QVector<QVector3D>();
     tPoints = QVector<QVector2D>();
-    objects = QVector<Obj>();
+    objects = QVector<QString>();
+    facetIndexesInObj = QHash<QString, QVector<int>>();
+    facetIndexesInSize = QHash<int, QVector<int>>();
     mtls = QSet<QString>();
     position = QVector3D(0.0, 0.0, 0.0);
 }
@@ -13,31 +16,43 @@ ObjData::ObjData()
 ObjData::~ObjData(){
 }
 
-Group::Group(){
-    facets = QVector<QVector<std::tuple<int,int,int>>>();
-}
-Group::Group(QString _matrial){
-    uid = QUuid::createUuid();
-    matrial = _matrial;
-    facets = QVector<QVector<std::tuple<int,int,int>>>();
-}
-Group::Group(QUuid _uid, QString _matrial, QVector<QVector<std::tuple<int,int,int>>> &_facets){
-    uid = _uid;
-    matrial = _matrial;
-    facets = _facets;
+facets::facets()
+{
+    uid = QUuid();
+    vexIndex = QVector<std::tuple<int,int,int>>();
 }
 
-Obj::Obj(){
-    uid = QUuid::createUuid();
-    groups = QVector<Group>();
-}
-Obj::Obj(QString _objName){
-    uid = QUuid::createUuid();
-    objName = _objName;
-    groups = QVector<Group>();
-}
-Obj::Obj(QUuid _uid, QString _objName, QVector<Group> &_groups){
+facets::facets(QUuid _uid, QVector<std::tuple<int,int,int>> &_vexIndex)
+{
     uid = _uid;
-    objName = _objName;
-    groups = _groups;
+    vexIndex = _vexIndex;
 }
+
+//Group::Group(){
+//    facets = QVector<QVector<std::tuple<int,int,int>>>();
+//}
+//Group::Group(QString _matrial){
+//    uid = QUuid::createUuid();
+//    matrial = _matrial;
+//    facets = QVector<QVector<std::tuple<int,int,int>>>();
+//}
+//Group::Group(QUuid _uid, QString _matrial, QVector<QVector<std::tuple<int,int,int>>> &_facets){
+//    uid = _uid;
+//    matrial = _matrial;
+//    facets = _facets;
+//}
+
+//Obj::Obj(){
+//    uid = QUuid::createUuid();
+//    groups = QVector<Group>();
+//}
+//Obj::Obj(QString _objName){
+//    uid = QUuid::createUuid();
+//    objName = _objName;
+//    groups = QVector<Group>();
+//}
+//Obj::Obj(QUuid _uid, QString _objName, QVector<Group> &_groups){
+//    uid = _uid;
+//    objName = _objName;
+//    groups = _groups;
+//}

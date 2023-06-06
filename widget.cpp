@@ -181,72 +181,117 @@ bool Widget::loadOnDetail(ObjData &objData){
     dataView->addTopLevelItem(rootItem);
     //Obj
 //    qDebug() << "OBJ:" << objData.objects.size();
-    foreach (Obj obj, objData.objects)
+    foreach (QString obj, objData.objects)
     {
         QTreeWidgetItem *objItem = new QTreeWidgetItem();
-        objItem->setText(0, "o:" + obj.objName + "(" + QString::number(obj.groups.size()) + ")");
+        QVector<int> facetIndexes = objData.facetIndexesInObj[obj];
+        objItem->setText(0, "o:" + obj + "(" + QString::number(facetIndexes.size()) + ")");
         objItem->setFlags(objItem->flags() | Qt::ItemIsUserCheckable);
         objItem->setCheckState(0, Qt::Unchecked);
         objItem->setData(0, m_STypeRole, NT_Obj);
         rootItem->addChild(objItem);
-        //Group
-//        qDebug() << obj.objName << ":" << obj.groups.size();
-        foreach (Group group, obj.groups)
-        {
-            QTreeWidgetItem *groupItem = new QTreeWidgetItem();
-            groupItem->setText(0, "g:" + group.uid.toString() + "[" + group.matrial + "](" + QString::number(group.facets.size()) + ")");
-            groupItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
-            groupItem->setCheckState(0, Qt::Unchecked);
-            groupItem->setData(0, m_STypeRole, NT_Group);
-            objItem->addChild(groupItem);
-            //Facets
-//            qDebug() << group.matrial << ":" << group.facets.size();
-            for (int i = 0; i < group.facets.size(); i++){
-                QVector<std::tuple<int, int, int>> facet = group.facets[i];
-                QTreeWidgetItem *facetItem = new QTreeWidgetItem();
-                facetItem->setText(0, "f:" + QString::number(i));
-                facetItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
-                facetItem->setCheckState(0, Qt::Unchecked);
-                facetItem->setData(0, m_STypeRole, NT_Facets);
-                groupItem->addChild(facetItem);
-                //Node: vertex, normal vertex, texture vectex
-//                qDebug() << i << ":" << facet.size();
-                for(int j = 0; j < facet.size(); j++){
-                    std::tuple<int, int, int> node = facet[j];
-                    QTreeWidgetItem *nodeItem = new QTreeWidgetItem();
-                    nodeItem->setText(0, "N:" + QString::number(j));
-                    nodeItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
-                    nodeItem->setCheckState(0, Qt::Unchecked);
-                    nodeItem->setData(0, m_STypeRole, NT_Node);
-                    facetItem->addChild(nodeItem);
+        for (int i = 0; i < facetIndexes.size(); i++){
+            facets facet = objData.facets[facetIndexes[i]];
+            QTreeWidgetItem *facetItem = new QTreeWidgetItem();
+            facetItem->setText(0, "f:" + QString::number(i));
+            facetItem->setFlags(objItem->flags() | Qt::ItemIsUserCheckable);
+            facetItem->setCheckState(0, Qt::Unchecked);
+            facetItem->setData(0, m_STypeRole, NT_Facets);
+            objItem->addChild(facetItem);
+            //Node: vertex, normal vertex, texture vectex
+            //                qDebug() << i << ":" << facet.size();
+            for(int j = 0; j < facet.vexIndex.size(); j++){
+                std::tuple<int, int, int> node = facet.vexIndex[j];
+                QTreeWidgetItem *nodeItem = new QTreeWidgetItem();
+                nodeItem->setText(0, "N:" + QString::number(j));
+                nodeItem->setFlags(facetItem->flags() | Qt::ItemIsUserCheckable);
+                nodeItem->setCheckState(0, Qt::Unchecked);
+                nodeItem->setData(0, m_STypeRole, NT_Node);
+                facetItem->addChild(nodeItem);
 
-                    int vindex = std::get<0>(node);
-                    int tindex = std::get<1>(node);
-                    int nindex = std::get<2>(node);
-//                    qDebug() << vindex << "," << nindex << "," << tindex;
-//                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
-                    QTreeWidgetItem *vItem = new QTreeWidgetItem();
-                    vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints[vindex - 1]));
-                    vItem->setFlags(groupItem->flags());
-                    vItem->setData(0, m_STypeRole, NT_ENode);
-                    nodeItem->addChild(vItem);
-//                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
-                    QTreeWidgetItem *tItem = new QTreeWidgetItem();
-                    tItem->setText(0, "t:" + Vector2D2String(objData.tPoints[tindex - 1]));
-                    tItem->setFlags(groupItem->flags());
-                    tItem->setData(0, m_STypeRole, NT_ENode);
-                    nodeItem->addChild(tItem);
-//                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
-                    QTreeWidgetItem *nItem = new QTreeWidgetItem();
-                    nItem->setText(0, "n:" + Vector3D2String(objData.nPoints[nindex - 1]));
-                    nItem->setFlags(groupItem->flags());
-                    nItem->setData(0, m_STypeRole, NT_ENode);
-                    nodeItem->addChild(nItem);
-                }
+                int vindex = std::get<0>(node);
+                int tindex = std::get<1>(node);
+                int nindex = std::get<2>(node);
+                //                    qDebug() << vindex << "," << nindex << "," << tindex;
+                //                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
+                QTreeWidgetItem *vItem = new QTreeWidgetItem();
+                vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints[vindex - 1]));
+                vItem->setFlags(nodeItem->flags());
+                vItem->setData(0, m_STypeRole, NT_ENode);
+                nodeItem->addChild(vItem);
+                //                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
+                QTreeWidgetItem *tItem = new QTreeWidgetItem();
+                tItem->setText(0, "t:" + Vector2D2String(objData.tPoints[tindex - 1]));
+                tItem->setFlags(nodeItem->flags());
+                tItem->setData(0, m_STypeRole, NT_ENode);
+                nodeItem->addChild(tItem);
+                //                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
+                QTreeWidgetItem *nItem = new QTreeWidgetItem();
+                nItem->setText(0, "n:" + Vector3D2String(objData.nPoints[nindex - 1]));
+                nItem->setFlags(nodeItem->flags());
+                nItem->setData(0, m_STypeRole, NT_ENode);
+                nodeItem->addChild(nItem);
             }
         }
+
+        //Group
+//        qDebug() << obj.objName << ":" << obj.groups.size();
+//        foreach (Group group, obj.groups)
+//        {
+//            QTreeWidgetItem *groupItem = new QTreeWidgetItem();
+//            groupItem->setText(0, "g:" + group.uid.toString() + "[" + group.matrial + "](" + QString::number(group.facets.size()) + ")");
+//            groupItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+//            groupItem->setCheckState(0, Qt::Unchecked);
+//            groupItem->setData(0, m_STypeRole, NT_Group);
+//            objItem->addChild(groupItem);
+//            //Facets
+////            qDebug() << group.matrial << ":" << group.facets.size();
+//            for (int i = 0; i < group.facets.size(); i++){
+//                QVector<std::tuple<int, int, int>> facet = group.facets[i];
+//                QTreeWidgetItem *facetItem = new QTreeWidgetItem();
+//                facetItem->setText(0, "f:" + QString::number(i));
+//                facetItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+//                facetItem->setCheckState(0, Qt::Unchecked);
+//                facetItem->setData(0, m_STypeRole, NT_Facets);
+//                groupItem->addChild(facetItem);
+//                //Node: vertex, normal vertex, texture vectex
+////                qDebug() << i << ":" << facet.size();
+//                for(int j = 0; j < facet.size(); j++){
+//                    std::tuple<int, int, int> node = facet[j];
+//                    QTreeWidgetItem *nodeItem = new QTreeWidgetItem();
+//                    nodeItem->setText(0, "N:" + QString::number(j));
+//                    nodeItem->setFlags(groupItem->flags() | Qt::ItemIsUserCheckable);
+//                    nodeItem->setCheckState(0, Qt::Unchecked);
+//                    nodeItem->setData(0, m_STypeRole, NT_Node);
+//                    facetItem->addChild(nodeItem);
+
+//                    int vindex = std::get<0>(node);
+//                    int tindex = std::get<1>(node);
+//                    int nindex = std::get<2>(node);
+////                    qDebug() << vindex << "," << nindex << "," << tindex;
+////                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
+//                    QTreeWidgetItem *vItem = new QTreeWidgetItem();
+//                    vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints[vindex - 1]));
+//                    vItem->setFlags(groupItem->flags());
+//                    vItem->setData(0, m_STypeRole, NT_ENode);
+//                    nodeItem->addChild(vItem);
+////                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
+//                    QTreeWidgetItem *tItem = new QTreeWidgetItem();
+//                    tItem->setText(0, "t:" + Vector2D2String(objData.tPoints[tindex - 1]));
+//                    tItem->setFlags(groupItem->flags());
+//                    tItem->setData(0, m_STypeRole, NT_ENode);
+//                    nodeItem->addChild(tItem);
+////                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
+//                    QTreeWidgetItem *nItem = new QTreeWidgetItem();
+//                    nItem->setText(0, "n:" + Vector3D2String(objData.nPoints[nindex - 1]));
+//                    nItem->setFlags(groupItem->flags());
+//                    nItem->setData(0, m_STypeRole, NT_ENode);
+//                    nodeItem->addChild(nItem);
+//                }
+//            }
+//        }
     }
-    dataView->expandAll();  //展开所有节点
+//    dataView->expandAll();  //展开所有节点
 
 //    dataDetail->clear();
 //    QVector<QTreeWidgetItem> structures();

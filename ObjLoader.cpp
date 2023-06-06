@@ -34,54 +34,56 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
         QList<QByteArray> strValues = lineData.split(' ');
 
         QString dataType = strValues.takeFirst();
-
-//        qDebug()<< dataType;
-
         if (dataType == "o"){
             QString objName = strValues.takeFirst();
-            objData.objects.push_back(Obj(objName));
+            objData.objects.push_back(objName);
             currentObj = objData.objects.size() - 1;
         }
         //其实不应该用usemtl而是用g来识别, 不过文件里没有g, 暂时先这样
         else if (dataType == "usemtl"){
             QString matrial = strValues.takeFirst();
-            objData.mtls.insert(matrial);//这里实际上应该当读取mtl文件时再记录一个与mtl属性连接的map
-            objData.objects[currentObj].groups.push_back(Group(matrial));
-            currentGroup = objData.objects[currentObj].groups.size() - 1;
+            objData.mtls.insert(matrial);//这里实际上应该当读取mtl文件时再记录一个与mtl属性连接的map, 同一个mtl可能被使用多次
+            //应该记录每个facet
+//            objData.objects[currentObj].groups.push_back(Group(matrial));
+//            currentGroup = objData.objects[currentObj].groups.size() - 1;
         }
         else if (dataType == "v"){
             if(strValues.size() == 3){
                 objData.vPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
             }
-//            std::transform(strValues.begin(),strValues.end(),std::back_inserter(objData.vPoints),[](QByteArray &str){
-//                return str.toFloat();
-//            });
+            else{
+                qDebug() << "vPoints Load Error";
+            }
         }else if (dataType == "vt"){
             if(strValues.size() == 2){
                 objData.tPoints.push_back(QVector2D(strValues[0].toFloat(), strValues[1].toFloat()));
             }
-//            std::transform(strValues.begin(),strValues.end(),std::back_inserter(objData.tPoints),[](QByteArray &str){
-//                return str.toFloat();
-//            });
+            else{
+                qDebug() << "tPoints Load Error";
+            }
         }else if (dataType == "vn"){
             if(strValues.size() == 3){
                 objData.nPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
             }
-//            std::transform(strValues.begin(),strValues.end(),std::back_inserter(objData.nPoints),[](QByteArray &str){
-//                return str.toFloat();
-//            });
+            else{
+                qDebug() << "nPoints Load Error";
+            }
         }else if (dataType == "f"){
-//            qDebug() << lineData;
-            objData.objects[currentObj].groups[currentGroup].facets.push_back(QVector<std::tuple<int,int,int>>());
-            currentFacet = objData.objects[currentObj].groups[currentGroup].facets.size() - 1;
+            objData.facets.push_back(facets());
+            currentFacet = objData.facets.size() - 1;
+            objData.facetIndexesInObj[objData.objects[currentObj]].push_back(currentFacet);
+            objData.facetIndexesInSize[strValues.size()].push_back(currentFacet);
             polyfacescount[strValues.size()]++;
 //            qDebug() << currentObj << "," << currentGroup << "," << currentFacet;
             std::transform(strValues.begin(), strValues.end(),
-                           std::back_inserter(objData.objects[currentObj].groups[currentGroup].facets[currentFacet]), [](QByteArray &str) {
+                           std::back_inserter(objData.facets[currentFacet].vexIndex), [](QByteArray &str) {
 
                 QList<QByteArray> intStr = str.split('/');
                 // f 的存储格式有 v, v/t, v/t/n, v//n
-                if(intStr.at(1) == "") {
+                if(intStr.size() == 2) {
+                    return std::make_tuple(intStr.first().toInt(), intStr.last().toInt(), 1);
+                }
+                else if(intStr.at(1) == "") {
                     return std::make_tuple(intStr.first().toInt(), 1, intStr.last().toInt());
                 }
                 return std::make_tuple(intStr.first().toInt(), intStr.at(1).toInt(), intStr.last().toInt());
