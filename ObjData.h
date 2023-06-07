@@ -71,16 +71,19 @@
 //    QVector<Group> groups;
 //};
 
-class facets{
+class facet{
 public:
-    facets();
-    facets(QUuid _uid, QVector<std::tuple<int,int,int>> &_vexIndex);
+    facet();
+    facet(QUuid _uid,
+           QVector<unsigned int> &_vpiontsIndex,
+           QVector<unsigned int> &_tpointsIndex,
+           QVector<unsigned int> &_npointsIndex);
 //    facets(QUuid _uid);
     QUuid uid;
     // v v/t/n v/t v//n
-    QVector<std::tuple<int,int,int>> vexIndex;//we haven't know the size of a facets until we loaded it.
-//    QVector<float> tpointsIndex;//there might be null while we are loading, so we might check if it exists.
-    //    QVector<float> npointsIndex;//there might be null while we are loading, so we might check if it exists.
+    QVector<unsigned int> vpointsIndex;//we haven't know the size of a facets until we loaded it.
+    QVector<unsigned int> tpointsIndex;//there might be null while we are loading, so we might check if it exists.
+    QVector<unsigned int> npointsIndex;//there might be null while we are loading, so we might check if it exists.
 };
 
 
@@ -100,12 +103,11 @@ public:
     //    void load(QString file, QVector<float> &vPoints, QVector<float> &tPoints, QVector<float> &nPoints);
     QUuid uid;
     QString file;
-
     QVector<float> vPoints;
     QVector<float> tPoints;
     QVector<float> nPoints;
     QVector<QString> objects;
-    QVector<facets> facets;
+    QVector<facet> facets;
     QHash<QString, QVector<int>> facetIndexesInObj; //for modifing a whole part of a objModel.
     QHash<int, QVector<int>> facetIndexesInSize; //for rendering the whole objModel on Screen by opengl functions correctly.
     //... a obj model might be more complex, such as: smooth, mtl, etc. and I will and be willing to fix all of them to build this project after I finish my current emergent works.
@@ -113,6 +115,7 @@ public:
     QSet<QString> mtls;
 
     QVector3D position;
+    QVector<float> vertPoints_, texturePoints_, normalPoints_;
 };
 
 #endif // OBJDATA_H

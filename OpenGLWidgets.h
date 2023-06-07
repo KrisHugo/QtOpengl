@@ -1,5 +1,5 @@
-#ifndef MAINRENDERER_H
-#define MAINRENDERER_H
+#ifndef OPENGLWIDGETS_H
+#define OPENGLWIDGETS_H
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLFunctions_3_3_Core>
@@ -12,13 +12,13 @@
 #include "camera.h"
 class QOpenGLTexture;
 
-class RendererWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
+class OpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 
 public:
-    RendererWidget(QWidget *parent = nullptr);
-    ~RendererWidget();
+    OpenGLWidget(QWidget *parent = nullptr);
+    ~OpenGLWidget();
     void loadModel(ObjData &objdata);
     void unloadModel();
 protected:
@@ -67,4 +67,4 @@ private slots:
     void slotTimeout();
 
 };
-#endif // MAINRENDERER_H
+#endif // OPENGLWIDGETS_H

@@ -11,7 +11,7 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QFileDialog>
-#include "MainRenderer.h"
+#include "OpenGLWidgets.h"
 #include "ObjLoader.h"
 #include "ObjData.h"
 class TreeView :public QTreeWidget
@@ -52,7 +52,7 @@ private:
     QLabel *lbl;
     QLabel *fileStatus;
     TreeView *dataView;
-    RendererWidget *renderer;
+    OpenGLWidget *openGL;
     ObjData loadedObj;
 
     //节点类型

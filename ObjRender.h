@@ -11,17 +11,21 @@
 class ObjRender
 {
 public:
-    ObjRender() = default;
+    ObjRender();
     ~ObjRender();
     void initsize(ObjData &objData);
-    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QMatrix4x4 &mMatrix, QVector3D cameraLocation, QVector3D lightCation);
+    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QMatrix4x4 &mMatrix, QVector3D cameraLocation);
     QOpenGLShaderProgram objProgram;
 private:
     QOpenGLTexture *objTexture = nullptr;
-    QOpenGLVertexArrayObject objVao;
-    QOpenGLBuffer vbo_;
+//    QOpenGLVertexArrayObject objVao;
+    QOpenGLBuffer vbo;
+    QOpenGLBuffer ebo;
     ObjData *data = nullptr;
+    QVector<unsigned int> vindices, tindices, nindices;
+
     QVector<float> vertPoints_, texturePoints_, normalPoints_;
+    QOpenGLVertexArrayObject vao;
 
 };
 

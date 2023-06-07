@@ -1,32 +1,30 @@
 #include "objdata.h"
 
-ObjData::ObjData()
+ObjData::ObjData():uid(), vPoints(), tPoints(), nPoints(),
+    objects(), facets(), facetIndexesInObj(), facetIndexesInSize(),
+    mtls(), vertPoints_(), texturePoints_(), normalPoints_()
 {
-    uid = QUuid();
-    vPoints = QVector<float>();
-    nPoints = QVector<float>();
-    tPoints = QVector<float>();
-    objects = QVector<QString>();
-    facetIndexesInObj = QHash<QString, QVector<int>>();
-    facetIndexesInSize = QHash<int, QVector<int>>();
-    mtls = QSet<QString>();
     position = QVector3D(0.0, 0.0, 0.0);
 }
 
 ObjData::~ObjData(){
 }
 
-facets::facets()
+facet::facet():uid(), vpointsIndex(), tpointsIndex(), npointsIndex()
 {
-    uid = QUuid();
-    vexIndex = QVector<std::tuple<int,int,int>>();
 }
 
-facets::facets(QUuid _uid, QVector<std::tuple<int,int,int>> &_vexIndex)
+facet::facet(QUuid _uid,
+               QVector<unsigned int> &_vpointsIndex,
+               QVector<unsigned int> &_tpointsIndex,
+               QVector<unsigned int> &_npointsIndex)
 {
     uid = _uid;
-    vexIndex = _vexIndex;
+    vpointsIndex = _vpointsIndex;
+    tpointsIndex = _tpointsIndex;
+    npointsIndex = _npointsIndex;
 }
+
 
 //Group::Group(){
 //    facets = QVector<QVector<std::tuple<int,int,int>>>();

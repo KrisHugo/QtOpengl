@@ -1,4 +1,4 @@
-#include "MainRenderer.h"
+#include "OpenGLWidgets.h"
 
 #include <QImage>
 #include <QOpenGLTexture>
@@ -54,7 +54,7 @@ static const float vertices[] = {
 };
 
 
-RendererWidget::RendererWidget(QWidget *parent)
+OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , cubeBuffer(QOpenGLBuffer::VertexBuffer)
     , lampBuffer(QOpenGLBuffer::VertexBuffer)
@@ -67,17 +67,17 @@ RendererWidget::RendererWidget(QWidget *parent)
     isLoad = false;
     installEventFilter(this);
 
-    connect(&tm_, SIGNAL(timeout()), this, SLOT(slotTimeout()));
-    tm_.start(30);
+//    connect(&tm_, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+//    tm_.start(30);
 }
 
-RendererWidget::~RendererWidget()
+OpenGLWidget::~OpenGLWidget()
 {
     cubeBuffer.destroy();
     lampBuffer.destroy();
 }
 
-void RendererWidget::initializeGL()
+void OpenGLWidget::initializeGL()
 {
 
     initializeOpenGLFunctions();
@@ -87,8 +87,8 @@ void RendererWidget::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    initializeCubeGeometry();
-    initializeLampGeometry();
+//    initializeCubeGeometry();
+//    initializeLampGeometry();
     initializeShaders();
 
     container = initializeTexture(":/container2.png");
@@ -99,39 +99,39 @@ void RendererWidget::initializeGL()
 //    lightLocation_.setZ(1);
 }
 
-void RendererWidget::resizeGL(int w, int h)
+void OpenGLWidget::resizeGL(int w, int h)
 {
     camera.setViewport(w, h);
     glViewport(0, 0, w, h);
 
     pMatrix_.setToIdentity();
-    pMatrix_.perspective(45,float(w)/h,0.01f,100.0f);
+    pMatrix_.perspective(45, float(w)/h, 0.01f, 100.0f);
 }
 
-void RendererWidget::paintGL()
+void OpenGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
-    //测试渲染效果的静态三维物体
-    static constexpr QVector3D cubePositions[] = {
-//        QVector3D( 0.0f,  0.0f,  0.0f),
-        QVector3D( 2.0f,  5.0f, -15.0f),
-        QVector3D(-1.5f, -2.2f, -2.5f),
-        QVector3D(-3.8f, -2.0f, -12.3f),
-        QVector3D( 2.4f, -0.4f, -3.5f),
-        QVector3D(-1.7f,  3.0f, -7.5f),
-        QVector3D( 1.3f, -2.0f, -2.5f),
-        QVector3D( 1.5f,  2.0f, -2.5f),
-        QVector3D( 1.5f,  0.2f, -1.5f),
-        QVector3D(-1.3f,  1.0f, -1.5f)
-    };
-    int i = 0;
-    for (const auto &position : cubePositions) {
-        const float angle =  20.0f * i;
-        ++i;
-        drawCube(position, angle);
-    }
-    drawLamp();
+//    //测试渲染效果的静态三维物体
+//    static constexpr QVector3D cubePositions[] = {
+////        QVector3D( 0.0f,  0.0f,  0.0f),
+//        QVector3D( 2.0f,  5.0f, -15.0f),
+//        QVector3D(-1.5f, -2.2f, -2.5f),
+//        QVector3D(-3.8f, -2.0f, -12.3f),
+//        QVector3D( 2.4f, -0.4f, -3.5f),
+//        QVector3D(-1.7f,  3.0f, -7.5f),
+//        QVector3D( 1.3f, -2.0f, -2.5f),
+//        QVector3D( 1.5f,  2.0f, -2.5f),
+//        QVector3D( 1.5f,  0.2f, -1.5f),
+//        QVector3D(-1.3f,  1.0f, -1.5f)
+//    };
+//    int i = 0;
+//    for (const auto &position : cubePositions) {
+//        const float angle =  20.0f * i;
+//        ++i;
+//        drawCube(position, angle);
+//    }
+//    drawLamp();
 
     if(isLoad){
         drawModel();
@@ -139,16 +139,16 @@ void RendererWidget::paintGL()
     update();
 }
 
-void RendererWidget::loadModel(ObjData &objData){
+void OpenGLWidget::loadModel(ObjData &objData){
     objRender.initsize(objData);
     isLoad = true;
 }
 
-void RendererWidget::unloadModel(){
-
+void OpenGLWidget::unloadModel(){
+    isLoad = false;
 }
 
-void RendererWidget::drawModel(){
+void OpenGLWidget::drawModel(){
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     QMatrix4x4 vMatrix = camera.view();
     QVector3D position = QVector3D( 0.0f,  0.0f,  0.0f);
@@ -158,12 +158,12 @@ void RendererWidget::drawModel(){
     mMatrix.rotate(angleY, 0, 1, 0);
     //    mMatrix.rotate(anglZ_,0,0,1);
 
-    objRender.render(f, pMatrix_, vMatrix, mMatrix, camera.position(), lightPos);
+    objRender.render(f, pMatrix_, vMatrix, mMatrix, camera.position());
     update();
 }
 
 
-void RendererWidget::slotTimeout()
+void OpenGLWidget::slotTimeout()
 {
 //    qDebug() << "test";
     // rotate the obj
@@ -175,7 +175,7 @@ void RendererWidget::slotTimeout()
     update();
 }
 
-bool RendererWidget::eventFilter(QObject *obj, QEvent *event)
+bool OpenGLWidget::eventFilter(QObject *obj, QEvent *event)
 {
 
     if (event->type() == QEvent::KeyPress)
@@ -195,7 +195,7 @@ bool RendererWidget::eventFilter(QObject *obj, QEvent *event)
 //    return QWidget::eventFilter(obj, event);
 }
 
-void RendererWidget::keyPressEvent(QKeyEvent *event)
+void OpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
     qDebug() << event->key();
 
@@ -218,7 +218,7 @@ void RendererWidget::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void RendererWidget::keyReleaseEvent(QKeyEvent *event)
+void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 {
     qDebug() << event->key();
 
@@ -242,7 +242,7 @@ void RendererWidget::keyReleaseEvent(QKeyEvent *event)
 }
 
 
-void RendererWidget::mouseMoveEvent(QMouseEvent *event)
+void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     static QPointF lastPos = event->pos();
     QPointF currentPos = event->pos();
@@ -264,13 +264,13 @@ void RendererWidget::mouseMoveEvent(QMouseEvent *event)
 
 }
 
-void RendererWidget::wheelEvent(QWheelEvent *event)
+void OpenGLWidget::wheelEvent(QWheelEvent *event)
 {
     camera.zoom(event->angleDelta().y()/100.0f);
     QWidget::wheelEvent(event);
 }
 
-void RendererWidget::initializeCubeGeometry()
+void OpenGLWidget::initializeCubeGeometry()
 {
     cubeVao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&cubeVao);
@@ -292,7 +292,7 @@ void RendererWidget::initializeCubeGeometry()
 }
 
 
-void RendererWidget::initializeLampGeometry()
+void OpenGLWidget::initializeLampGeometry()
 {
     lampVao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&lampVao);
@@ -307,7 +307,7 @@ void RendererWidget::initializeLampGeometry()
     glEnableVertexAttribArray(0);
 }
 
-void RendererWidget::initializeShaders()
+void OpenGLWidget::initializeShaders()
 {
     if (!objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vcube.vsh")
         || !objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/fcube.fsh")
@@ -329,7 +329,7 @@ void RendererWidget::initializeShaders()
     }
 }
 
-QOpenGLTexture *RendererWidget::initializeTexture(const QString &path)
+QOpenGLTexture *OpenGLWidget::initializeTexture(const QString &path)
 {
     QOpenGLTexture *texture = new QOpenGLTexture(QImage(path).mirrored());
 
@@ -347,7 +347,7 @@ QOpenGLTexture *RendererWidget::initializeTexture(const QString &path)
 }
 
 
-void RendererWidget::drawCube(const QVector3D &position, float angle)
+void OpenGLWidget::drawCube(const QVector3D &position, float angle)
 {
     cubeProgram.bind();
 
@@ -383,7 +383,7 @@ void RendererWidget::drawCube(const QVector3D &position, float angle)
     cubeProgram.release();
 }
 
-void RendererWidget::drawLamp()
+void OpenGLWidget::drawLamp()
 {
     lampProgram.bind();
 

@@ -2,6 +2,14 @@
 
 #include <QDebug>
 #include <QFile>
+#include <regex>
+
+void ObjLoader::push_back_vertexIndex(ObjData &objData, int currentFacet, QVector<int> vert)
+{
+    objData.facets[currentFacet].vpointsIndex.push_back(vert[0]);
+    objData.facets[currentFacet].tpointsIndex.push_back(vert[1]);
+    objData.facets[currentFacet].npointsIndex.push_back(vert[2]);
+}
 
 bool ObjLoader::Load(QString fileName, ObjData &objData)
 {
@@ -25,9 +33,21 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
 //    QVector<float> vertextPoints, texturePoints, normalPoints;
     int currentObj = -1, currentGroup = -1, currentFacet = -1;
 //    QVector<std::tuple<int,int,int>> facesIndexs;
+//插入初始t, n
+    objData.tPoints.push_back(0);
+    objData.tPoints.push_back(1);
+
+    objData.nPoints.push_back(0);
+    objData.nPoints.push_back(0);
+    objData.nPoints.push_back(1);
+
+
     while (!objFile.atEnd()) {
         QByteArray lineData = objFile.readLine();
-        lineData = lineData.remove(lineData.size() - 1, 1);
+        std::regex pattern("\\r\\n+$");
+        int len = std::regex_search(lineData.toStdString(), pattern) ? 2 : 1;
+//        qDebug() << QString::number(len) << ":" << lineData.toStdString();
+        lineData = lineData.remove(lineData.size() - len, len);
         if(lineData.isEmpty()){
             continue;
         }
@@ -49,7 +69,6 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
         }
         else if (dataType == "v"){
             if(strValues.size() == 3){
-//                objData.vPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
                 std::transform(strValues.begin(), strValues.end(),
                                std::back_inserter(objData.vPoints), [](QByteArray &str) {
                     return str.toFloat();
@@ -59,8 +78,8 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
                 qDebug() << "vPoints Load Error";
             }
         }else if (dataType == "vt"){
+//            qDebug() << strValues.size() << ":" << strValues;
             if(strValues.size() == 2){
-//                objData.tPoints.push_back(QVector2D(strValues[0].toFloat(), strValues[1].toFloat()));
                 std::transform(strValues.begin(), strValues.end(),
                                std::back_inserter(objData.tPoints), [](QByteArray &str) {
                     return str.toFloat();
@@ -71,7 +90,6 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
             }
         }else if (dataType == "vn"){
             if(strValues.size() == 3){
-//                objData.nPoints.push_back(QVector3D(strValues[0].toFloat(), strValues[1].toFloat(), strValues[2].toFloat()));
                 std::transform(strValues.begin(), strValues.end(),
                                std::back_inserter(objData.nPoints), [](QByteArray &str) {
                     return str.toFloat();
@@ -81,33 +99,62 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
                 qDebug() << "nPoints Load Error";
             }
         }else if (dataType == "f"){
-            objData.facets.push_back(facets());
+            objData.facets.push_back(facet());
             currentFacet = objData.facets.size() - 1;
             objData.facetIndexesInObj[objData.objects[currentObj]].push_back(currentFacet);
             objData.facetIndexesInSize[strValues.size()].push_back(currentFacet);
-            polyfacescount[strValues.size()]++;
-//            qDebug() << currentObj << "," << currentGroup << "," << currentFacet;
-            std::transform(strValues.begin(), strValues.end(),
-                           std::back_inserter(objData.facets[currentFacet].vexIndex), [](QByteArray &str) {
-
+//            polyfacescount[strValues.size()]++;
+//            qDebug() << lineData.toStdString();
+            QVector<int> firstVex, lastVex;
+            for (int i = 0; i < strValues.size(); i++) {
+//                qDebug() << "i:" << QString::number(i);
+                QByteArray str = strValues[i];
                 QList<QByteArray> intStr = str.split('/');
-                // f 的存储格式有 v, v/t, v/t/n, v//n
-                if(intStr.size() == 2) {
-                    return std::make_tuple(intStr.first().toInt(), intStr.last().toInt(), 1);
+//                qDebug() << intStr;
+                int v, t, n;
+//                qDebug() << intStr;
+                v = intStr.first().toInt();
+//                qDebug() <<"v:"<< QString::number(v);
+                if (intStr.size() == 1){
+                    t = 0;
+                    n = 0;
                 }
-                else if(intStr.at(1) == "") {
-                    return std::make_tuple(intStr.first().toInt(), 1, intStr.last().toInt());
+                else if(intStr.size() == 2){
+                    t = intStr.last().toInt();
+                    n = 0;
                 }
-                return std::make_tuple(intStr.first().toInt(), intStr.at(1).toInt(), intStr.last().toInt());
+                else if(intStr.at(1) == ""){
+                    t = 0;
+                    n = intStr.last().toInt();
+                }
+                else{
+                    t = intStr.at(1).toInt();
+                    n = intStr.last().toInt();
+                }
 
-            });
+                v--;
+//                qDebug() <<"t:"<< QString::number(t);
+//                qDebug() <<"n:"<< QString::number(n);
+                if(i == 0) firstVex = {v, t, n};
+                //补三角面
+                if(i >= 3){
+                    // firstVex
+                    push_back_vertexIndex(objData, currentFacet, firstVex);
+                    // lastVex
+                    push_back_vertexIndex(objData, currentFacet, lastVex);
+                }
+//                qDebug() << "add Facets";
+                push_back_vertexIndex(objData, currentFacet, {v, t, n});
+                lastVex = {v, t, n};
+//                qDebug() << "lastVex:" << lastVex;
+            }
 
         }
     }
 
     if (objData.vPoints.size() != 0 && objData.tPoints.size() != 0 && objData.nPoints.size() != 0 && objData.objects.size() != 0)
     {
-        qDebug()<< objData.vPoints.size() << "," << objData.tPoints.size()  << ","  << objData.nPoints.size() << ","  << objData.objects.size();
+        qDebug()<< objData.vPoints.size() << "," << objData.tPoints.size()  << ","  << objData.nPoints.size() << "," << objData.facets.size() << ","  << objData.objects.size();
     }
     else
     {
@@ -117,31 +164,32 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
 
     //only extract the points which in one of the faces, and throw the others.
     //but only available for triangle facet
-//    for(auto &verFaceInfo : facesIndexs){
-//        int vIndex = std::get<0>(verFaceInfo);
-//        int tIndex = std::get<1>(verFaceInfo);
-//        int nIndex = std::get<2>(verFaceInfo);
-//        if(vIndex < 0 || tIndex < 0 || nIndex < 0){
-//            continue;
-//        }
-//        int vPointSizes = vertextPoints.count() / 3;
-//        int tPointSizes = texturePoints.count() / 2;
-//        int nPointSizes = normalPoints.count() / 3;
-//        if(vIndex * 3 + 2 > vPointSizes || tIndex * 2 + 1 > tPointSizes || nIndex * 3 + 2 > nPointSizes){
-////            qDebug() << "outofbounds" << vertextPoints.at((vIndex) * 3) << texturePoints.at((tIndex) * 2) << normalPoints.at((nIndex) * 3);
-//            continue;
-//        }
-//        objData.vPoints << vertextPoints.at((vIndex) * 3);
-//        objData.vPoints << vertextPoints.at((vIndex) * 3 + 1);
-//        objData.vPoints << vertextPoints.at((vIndex) * 3 + 2);
-//        objData.tPoints << texturePoints.at((tIndex) * 2);
-//        objData.tPoints << texturePoints.at((tIndex) * 2 + 1);
-//        objData.nPoints << normalPoints.at((nIndex) * 3);
-//        objData.nPoints << normalPoints.at((nIndex) * 3 + 1);
-//        objData.nPoints << normalPoints.at((nIndex) * 3 + 2);
-//    }
+    for(auto &verFaceInfo : objData.facets){
+        for(int i = 0; i < verFaceInfo.vpointsIndex.size(); i++){
+            unsigned int vIndex = verFaceInfo.vpointsIndex[i];
+//            qDebug() << "v" << QString::number(vIndex);
+            unsigned int tIndex = verFaceInfo.tpointsIndex[i];
+//            qDebug() << "t" << QString::number(tIndex);
+            unsigned int nIndex = verFaceInfo.npointsIndex[i];
+//            qDebug() << "n" << QString::number(nIndex);
+//            int vPointSizes = objData.vPoints.size() / 3;
+//            int tPointSizes = objData.tPoints.size() / 2;
+//            int nPointSizes = objData.nPoints.size() / 3;
+            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3);
+            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 1);
+            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 2);
+
+            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2);
+            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2 + 1);
+
+            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3);
+            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 1);
+            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 2);
+//            qDebug() << "test";
+        }
+    }
     //debug
-    qDebug() << polyfacescount;
+//    qDebug() << polyfacescount;
 
 //    vertextPoints.clear();
 //    texturePoints.clear();

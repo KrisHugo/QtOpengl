@@ -8,9 +8,6 @@
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
-
-
-
     loadFileFlag = 0;
     this->resize(1200, 900);
 
@@ -46,8 +43,8 @@ Widget::Widget(QWidget *parent)
 //    listComp = new QLabel();
     //2.2.1 文本提示框
     //2.3 OpenGL renderer
-    renderer = new RendererWidget();
-    renderer->setMinimumWidth(900);
+    openGL = new OpenGLWidget();
+    openGL->setMinimumWidth(900);
     fileStatus = new QLabel("尚未打开文件");
     fileStatus->setMinimumWidth(350);
     fileStatus->setMaximumWidth(500);
@@ -82,14 +79,14 @@ Widget::Widget(QWidget *parent)
     QVBoxLayout *baseLayout = new QVBoxLayout(this);
     baseLayout->addWidget(mainMenuBar);
     baseLayout->addLayout(mainLayout);
-    mainLayout->addWidget(renderer);
+    mainLayout->addWidget(openGL);
     mainLayout->addLayout(rightLayout);
     rightLayout->addWidget(fileStatus);
     rightLayout->addWidget(dataView, 10000);
 
 //    baseLayout->setAlignment(Qt::AlignLeft | Qt::AlignCenter);
     //2.5 应用布局
-    renderer->show();
+    openGL->show();
 //    renderer->installEventFilter(renderer);
 
 
@@ -133,7 +130,7 @@ void Widget::SelectFile(){
             {
                 //load on detail
                 loadOnDetail(loadedObj);
-                renderer->loadModel(loadedObj);
+                openGL->loadModel(loadedObj);
             }
             else{
                 qCritical("Load Error");
@@ -191,7 +188,7 @@ bool Widget::loadOnDetail(ObjData &objData){
         objItem->setData(0, m_STypeRole, NT_Obj);
         rootItem->addChild(objItem);
         for (int i = 0; i < facetIndexes.size(); i++){
-            facets facet = objData.facets[facetIndexes[i]];
+            facet facet = objData.facets[facetIndexes[i]];
             QTreeWidgetItem *facetItem = new QTreeWidgetItem();
             facetItem->setText(0, "f:" + QString::number(i));
             facetItem->setFlags(objItem->flags() | Qt::ItemIsUserCheckable);
@@ -200,34 +197,33 @@ bool Widget::loadOnDetail(ObjData &objData){
             objItem->addChild(facetItem);
             //Node: vertex, normal vertex, texture vectex
             //                qDebug() << i << ":" << facet.size();
-            for(int j = 0; j < facet.vexIndex.size(); j++){
-                std::tuple<int, int, int> node = facet.vexIndex[j];
+            for(int j = 0; j < facet.vpointsIndex.size(); j++){
+                unsigned int vindex = facet.vpointsIndex[j];
+                unsigned int tindex = facet.tpointsIndex[j];
+                unsigned int nindex = facet.npointsIndex[j];
                 QTreeWidgetItem *nodeItem = new QTreeWidgetItem();
-                nodeItem->setText(0, "N:" + QString::number(j));
+                nodeItem->setText(0, "Node:" + QString::number(vindex));
                 nodeItem->setFlags(facetItem->flags() | Qt::ItemIsUserCheckable);
                 nodeItem->setCheckState(0, Qt::Unchecked);
                 nodeItem->setData(0, m_STypeRole, NT_Node);
                 facetItem->addChild(nodeItem);
 
-                int vindex = std::get<0>(node);
-                int tindex = std::get<1>(node);
-                int nindex = std::get<2>(node);
                 //                    qDebug() << vindex << "," << nindex << "," << tindex;
                 //                    qDebug() << "test1:" << objData.vPoints.size() << ":" << vindex;
                 QTreeWidgetItem *vItem = new QTreeWidgetItem();
-                vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints, 3 * (vindex - 1)));
+                vItem->setText(0,  "v:" + Vector3D2String(objData.vPoints, 3 * (vindex)));
                 vItem->setFlags(nodeItem->flags());
                 vItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(vItem);
                 //                    qDebug() << "test2:" << objData.tPoints.size() << ":" << tindex;
                 QTreeWidgetItem *tItem = new QTreeWidgetItem();
-                tItem->setText(0, "t:" + Vector2D2String(objData.tPoints, 2 * (tindex - 1)));
+                tItem->setText(0, "t:" + Vector2D2String(objData.tPoints, 2 * (tindex)));
                 tItem->setFlags(nodeItem->flags());
                 tItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(tItem);
                 //                    qDebug() << "test3:" << objData.nPoints.size() << ":" << nindex;
                 QTreeWidgetItem *nItem = new QTreeWidgetItem();
-                nItem->setText(0, "n:" + Vector3D2String(objData.nPoints, 3 * (nindex - 1)));
+                nItem->setText(0, "n:" + Vector3D2String(objData.nPoints, 3 * (nindex)));
                 nItem->setFlags(nodeItem->flags());
                 nItem->setData(0, m_STypeRole, NT_ENode);
                 nodeItem->addChild(nItem);
