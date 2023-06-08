@@ -15,6 +15,7 @@ void QOpenGLFunctions::glDrawElements(
          GLenum  type,
    const GLvoid  *indices);
 ```
+> 本项目中使用的是glDrawArrays而不是DrawElements, 是因为暂时没有解决vertex的attributes的实际indices按顺序读取的过程中实际是不同的, 这导致我无法正确使用indices来读取vertex. 因此我只能暂时在cpu中手动将原本的indices遍历获取渲染模型的正确vertex buffer, 但实际上这个过程中会重复保存很多的顶点缓存, 导致数据量极大, 但我暂时没有什么好的解决办法, 查了诸多opengl的资料也暂时没有找到. 但这个点是提升渲染效率的极重要的一点.
 
 GL_enum : see in "./Readme/GL_enum.jpg"
 
