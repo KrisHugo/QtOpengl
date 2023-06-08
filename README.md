@@ -27,7 +27,7 @@ GL_enum : see in "./Readme/GL_enum.jpg"
 - 其中projection和view以及viewPos(或者可以直接说camera.position)控制3D物体渲染到摄像头上的2D投影坐标, model是每个顶点所归属的3d模型的中心位置, 四个参数与顶点vertex的属性运算之后, 就可以确定实际渲染的点在3d空间中的位置，以及正确的渲染在摄像机的投影位置.
 
 ## To-do
-- Find a Covex Hull Solusion for 3D models.
+- Find a Covex Hull Solutions for 3D models.
 
 ## Done
 - optimize the structure of a obj model load on memory
