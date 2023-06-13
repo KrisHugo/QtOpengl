@@ -79,15 +79,20 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
             }
         }else if (dataType == "vt"){
 //            qDebug() << strValues.size() << ":" << strValues;
-            if(strValues.size() == 2){
-                std::transform(strValues.begin(), strValues.end(),
-                               std::back_inserter(objData.tPoints), [](QByteArray &str) {
-                    return str.toFloat();
-                });
-            }
-            else{
-                qDebug() << "tPoints Load Error";
-            }
+//            if(strValues.size() == 2){
+//                std::transform(strValues.begin(), strValues.end(),
+//                               std::back_inserter(objData.tPoints), [](QByteArray &str) {
+//                    return str.toFloat();
+//                });
+//            }
+//            else{
+//                qDebug() << "tPoints Load Error";
+//            }
+            std::transform(strValues.begin(), strValues.begin() + std::min(2, static_cast<int>(strValues.size())),
+                           std::back_inserter(objData.tPoints),
+                           [](QByteArray &str) {
+                return str.toFloat();
+            });
         }else if (dataType == "vn"){
             if(strValues.size() == 3){
                 std::transform(strValues.begin(), strValues.end(),

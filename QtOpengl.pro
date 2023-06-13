@@ -24,7 +24,6 @@ HEADERS += \
     camera.h
 
 RESOURCES += \
-    obj.qrc \
     shaders.qrc \
     textures.qrc \
 

@@ -72,3 +72,5 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
+resources/OBJ/Neptune_Iustinian_Funie.obj
+*.stl
