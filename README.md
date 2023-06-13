@@ -19,7 +19,7 @@ void QOpenGLFunctions::glDrawElements(
 
 GL_enum : see in "./Readme/GL_enum.jpg"
 
-[test](https://github.com/KrisHugo/QtOpengl/blob/master/Readme/GLenum.png)
+![imagetest](https://github.com/KrisHugo/QtOpengl/blob/master/Readme/GLenum.png)
 
 <!-- <img src="./README/GLenum.png" style="zoom:100%;" /> -->
 
