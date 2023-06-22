@@ -14,19 +14,16 @@ public:
     ObjRender();
     ~ObjRender();
     void initsize(ObjData &objData);
-    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QMatrix4x4 &mMatrix, QVector3D cameraLocation);
+    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QVector3D cameraLocation);
+    void unLoad();
     QOpenGLShaderProgram objProgram;
 private:
     QOpenGLTexture *objTexture = nullptr;
-//    QOpenGLVertexArrayObject objVao;
-    QOpenGLBuffer vbo;
-    QOpenGLBuffer ebo;
-    ObjData *data = nullptr;
+    ObjData *curData = nullptr;
     QVector<unsigned int> vindices, tindices, nindices;
 
     QVector<float> vertPoints_, texturePoints_, normalPoints_;
     QOpenGLVertexArrayObject vao;
-
 };
 
 #endif // OBJRENDER_H

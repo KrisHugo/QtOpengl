@@ -64,7 +64,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     //构成主widget的子窗口
     setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     hide();
-    isLoad = false;
+    loadingFlag = false;
     installEventFilter(this);
 
 //    connect(&tm_, SIGNAL(timeout()), this, SLOT(slotTimeout()));
@@ -93,10 +93,6 @@ void OpenGLWidget::initializeGL()
 
     container = initializeTexture(":/container2.png");
     container_specular = initializeTexture(":/container2_specular.png");
-
-//    lightLocation_.setX(10);
-//    lightLocation_.setY(10);
-//    lightLocation_.setZ(1);
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -112,7 +108,6 @@ void OpenGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
-//    //测试渲染效果的静态三维物体
 //    static constexpr QVector3D cubePositions[] = {
 ////        QVector3D( 0.0f,  0.0f,  0.0f),
 //        QVector3D( 2.0f,  5.0f, -15.0f),
@@ -133,7 +128,7 @@ void OpenGLWidget::paintGL()
 //    }
 //    drawLamp();
 
-    if(isLoad){
+    if(loadingFlag){
         drawModel();
     }
     update();
@@ -141,24 +136,24 @@ void OpenGLWidget::paintGL()
 
 void OpenGLWidget::loadModel(ObjData &objData){
     objRender.initsize(objData);
-    isLoad = true;
+    loadingFlag = true;
 }
 
-void OpenGLWidget::unloadModel(){
-    isLoad = false;
+void OpenGLWidget::unLoadModel(){
+    objRender.unLoad();
+    loadingFlag = false;
+}
+
+bool OpenGLWidget::IsLoad()
+{
+    return loadingFlag;
 }
 
 void OpenGLWidget::drawModel(){
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     QMatrix4x4 vMatrix = camera.view();
-    QVector3D position = QVector3D( 0.0f,  0.0f,  0.0f);
-    QMatrix4x4 mMatrix;
-    mMatrix.translate(position);
-    //    mMatrix.rotate(angleX_,1,0,0);
-    mMatrix.rotate(angleY, 0, 1, 0);
-    //    mMatrix.rotate(anglZ_,0,0,1);
 
-    objRender.render(f, pMatrix_, vMatrix, mMatrix, camera.position());
+    objRender.render(f, pMatrix_, vMatrix, camera.position());
     update();
 }
 
@@ -168,8 +163,8 @@ void OpenGLWidget::slotTimeout()
 //    qDebug() << "test";
     // rotate the obj
 //    angleX_ += 5;
-    angleY += 5;
-//    anglZ_ += 5;
+//    angleY_ += 5;
+//    angleZ_ += 5;
 //    QVector3D position3 = QVector3D( angleX_,  angleY,  anglZ_);
 //    drawCube(position3, 20);
     update();

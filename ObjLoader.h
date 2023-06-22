@@ -8,11 +8,9 @@
 class ObjLoader{
 public:
     bool Load(QString fileName, ObjData &objdata);
-
+private:
     void push_back_vertexIndex(ObjData &objData, int currentFacet, QVector<int> vert);
 
-private:
-    QHash<int, int> polyfacescount;
 };
 
 #endif // OBJLOADER_H

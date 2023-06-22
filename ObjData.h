@@ -2,10 +2,10 @@
 #define OBJDATA_H
 #include <QString>
 #include <QVector>
-#include <QVector3D>
+#include <QMatrix4x4>
 #include <QSet>
 #include <QUuid>
-
+#include <QOpenGLBuffer>
 //// 材质信息结构体
 //class MaterialInfo
 //{
@@ -95,11 +95,16 @@ position, rotation, scale
 
 //读入内存后的状态, 除了原本的模型信息, 还需要对模型整体进行调整, 如位移、旋转、缩放等.
 //未来可能需要对顶点本身进行调整, 这本身还会影响面的法线,uv信息等
+//实际渲染的指针也保存在这里？
 class ObjData
 {
 public:
     ObjData();
     ~ObjData();
+
+    void LoadOnOpenGL(QVector<float> &vertPoints_, QVector<float> &texturePoints_, QVector<float> &normalPoints_);
+    void Rotate(float angleX_, float angleY_, float angleZ_);
+
     //    void load(QString file, QVector<float> &vPoints, QVector<float> &tPoints, QVector<float> &nPoints);
     QUuid uid;
     QString file;
@@ -114,8 +119,10 @@ public:
     // texture for rendering correct and comfortable for viewers.
     QSet<QString> mtls;
 
-    QVector3D position;
-    QVector<float> vertPoints_, texturePoints_, normalPoints_;
+    QMatrix4x4 transform;
+
+    QOpenGLBuffer vbo;
+    QOpenGLBuffer ebo;
 };
 
 #endif // OBJDATA_H

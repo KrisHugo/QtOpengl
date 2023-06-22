@@ -123,9 +123,13 @@ void Widget::SelectFile(){
         if(objPaths.size() > 0)
         {
 //            txtTipComp->append(QString::number(loadStats));
-            fileStatus->setText("现在已打开：" + objPaths[0]);
+            fileStatus->setText("现在已打开: " + objPaths[0]);
             loadFileFlag = 1;
             ObjLoader objLoader;
+            if(openGL->IsLoad()){
+                openGL->unLoadModel();
+            }
+            loadedObj = ObjData();
             if(objLoader.Load(objPaths[0], loadedObj))
             {
                 //load on detail
@@ -170,6 +174,8 @@ void Widget::SelectFile(){
 }
 
 bool Widget::loadOnDetail(ObjData &objData){
+    //Clear All
+    dataView->clear();
     //Top
     QTreeWidgetItem *rootItem = new QTreeWidgetItem();
     rootItem->setText(0, "file:" + objData.file);

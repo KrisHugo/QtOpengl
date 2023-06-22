@@ -31,7 +31,7 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
     objData.file = fileName;
 
 //    QVector<float> vertextPoints, texturePoints, normalPoints;
-    int currentObj = -1, currentGroup = -1, currentFacet = -1;
+    int currentObj = -1, currentFacet = -1;
 //    QVector<std::tuple<int,int,int>> facesIndexs;
 //插入初始t, n
     objData.tPoints.push_back(0);
@@ -167,40 +167,37 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
         return false;
     }
 
-    //only extract the points which in one of the faces, and throw the others.
-    //but only available for triangle facet
-    for(auto &verFaceInfo : objData.facets){
-        for(int i = 0; i < verFaceInfo.vpointsIndex.size(); i++){
-            unsigned int vIndex = verFaceInfo.vpointsIndex[i];
-//            qDebug() << "v" << QString::number(vIndex);
-            unsigned int tIndex = verFaceInfo.tpointsIndex[i];
-//            qDebug() << "t" << QString::number(tIndex);
-            unsigned int nIndex = verFaceInfo.npointsIndex[i];
-//            qDebug() << "n" << QString::number(nIndex);
-//            int vPointSizes = objData.vPoints.size() / 3;
-//            int tPointSizes = objData.tPoints.size() / 2;
-//            int nPointSizes = objData.nPoints.size() / 3;
-            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3);
-            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 1);
-            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 2);
+//    //only extract the points which in one of the faces, and throw the others.
+//    //but only available for triangle facet
+//    for(auto &verFaceInfo : objData.facets){
+//        for(int i = 0; i < verFaceInfo.vpointsIndex.size(); i++){
+//            unsigned int vIndex = verFaceInfo.vpointsIndex[i];
+////            qDebug() << "v" << QString::number(vIndex);
+//            unsigned int tIndex = verFaceInfo.tpointsIndex[i];
+////            qDebug() << "t" << QString::number(tIndex);
+//            unsigned int nIndex = verFaceInfo.npointsIndex[i];
+////            qDebug() << "n" << QString::number(nIndex);
+////            int vPointSizes = objData.vPoints.size() / 3;
+////            int tPointSizes = objData.tPoints.size() / 2;
+////            int nPointSizes = objData.nPoints.size() / 3;
+//            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3);
+//            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 1);
+//            objData.vertPoints_ << objData.vPoints.at((vIndex) * 3 + 2);
 
-            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2);
-            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2 + 1);
+//            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2);
+//            objData.texturePoints_ << objData.tPoints.at((tIndex) * 2 + 1);
 
-            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3);
-            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 1);
-            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 2);
-//            qDebug() << "test";
-        }
-    }
+//            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3);
+//            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 1);
+//            objData.normalPoints_ << objData.nPoints.at((nIndex) * 3 + 2);
+////            qDebug() << "test";
+//        }
+//    }
     //debug
 //    qDebug() << polyfacescount;
-
-//    vertextPoints.clear();
-//    texturePoints.clear();
-//    normalPoints.clear();
-//    facesIndexs.clear();
-
     objFile.close();
     return true;
 }
+
+
+

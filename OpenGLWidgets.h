@@ -20,7 +20,8 @@ public:
     OpenGLWidget(QWidget *parent = nullptr);
     ~OpenGLWidget();
     void loadModel(ObjData &objdata);
-    void unloadModel();
+    void unLoadModel();
+    bool IsLoad();
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -34,12 +35,12 @@ protected:
 
 
 private:
-    bool isLoad;
+    bool loadingFlag;
     ObjRender objRender;
     QTimer tm_;
     QVector3D cameraLocation_, lightLocation_;
     QMatrix4x4 pMatrix_;
-    qreal angleX_,angleY,anglZ_;
+    qreal angleX_,angleY_,angleZ_;
 
     Camera camera;
 

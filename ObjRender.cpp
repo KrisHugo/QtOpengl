@@ -2,46 +2,42 @@
 #include <QDebug>
 #include <QOpenGLTexture>
 ObjRender::ObjRender()
-    : vbo(QOpenGLBuffer::VertexBuffer),
-    ebo(QOpenGLBuffer::IndexBuffer)
+    : vertPoints_(), texturePoints_(), normalPoints_()
 {
 }
 ObjRender::~ObjRender(){
-    vbo.destroy();
-    ebo.destroy();
+//    vbo.destroy();
+//    ebo.destroy();
 }
 
 void ObjRender::initsize(ObjData &objData)
 {
+    curData = &objData;
 //    qDebug() << "test1";
-    if(objData.vPoints.size() <= 0 || objData.nPoints.size() <= 0 || objData.tPoints.size() <= 0){
+    if(curData->vPoints.size() <= 0 || curData->nPoints.size() <= 0 || curData->tPoints.size() <= 0){
         qDebug("Load failed");
         return;
     }
-    //program
-//    objProgram.bind();
-
     QVector<float> points;
-    vertPoints_ << objData.vertPoints_;
-    texturePoints_ << objData.texturePoints_;
-    normalPoints_ << objData.normalPoints_;
+
+    curData->LoadOnOpenGL(vertPoints_, texturePoints_, normalPoints_);
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
 //    qDebug() << "test2";
 
 //    vao.create();
-    vbo.create();
-    ebo.create();
+    curData->vbo.create();
+    curData->ebo.create();
     //VAO
 //    vao.bind();
     //VBO
-    vbo.bind();
-    vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    vbo.allocate(points.data(), points.size() * sizeof(float)); // save in buffer
+    curData->vbo.bind();
+    curData->vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    curData->vbo.allocate(points.data(), points.size() * sizeof(float)); // save in buffer
 //    qDebug() << "test3";
 
     //EBO
     QVector<GLuint> indices;
-    foreach(facet face, objData.facets){
+    foreach(facet face, curData->facets){
         vindices << face.vpointsIndex;
         tindices << face.tpointsIndex;
         nindices << face.npointsIndex;
@@ -49,12 +45,13 @@ void ObjRender::initsize(ObjData &objData)
     //    qDebug() << "test5";
     indices << vindices << tindices << nindices;
 //        qDebug() << "test6";
-    //创建IBO
-    ebo.bind();
-    ebo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    // 初始化IBO
-    ebo.allocate(indices.data(), indices.size() * sizeof(GLuint));
+//    //创建IBO
+//    curData->ebo.bind();
+//    curData->ebo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+//    // 初始化IBO
+//    curData->ebo.allocate(indices.data(), indices.size() * sizeof(GLuint));
 
+    //actually doesn't works.
     //Texture
     objTexture = new QOpenGLTexture(QImage(":/container2.png").mirrored());
     // Set nearest filtering mode for texture minification
@@ -65,26 +62,35 @@ void ObjRender::initsize(ObjData &objData)
     // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
     objTexture->setWrapMode(QOpenGLTexture::Repeat);
 
-    vbo.release();
+    curData->vbo.release();
+//    curData->ebo.release();
 //    vao.release();
-//    ebo.release();
 //    objProgram.release();
+
+
+    curData->transform.translate(QVector3D(0.0f,  0.0f,  0.0f));
 }
 
-void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QMatrix4x4 &modelM, QVector3D cameraLoc)
+void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QVector3D cameraLoc)
 {
+    //    qDebug() << "test1";
+    if(curData == nullptr){
+        qDebug("Unloaded");
+        return;
+    }
+
     f->glEnable(GL_DEPTH_TEST);
     objProgram.bind();//shader selected
-    vbo.bind();// buffer selected
-//    ebo.bind();// indices buffer selected;
+    curData->vbo.bind();// buffer selected
+//    curData->ebo.bind();// indices buffer selected;
 
 //    qDebug() << vbo.size();
 //    qDebug() << ebo.size();
-//    qDebug() << projectionM;
+//    qDebug() << projectionM
     // shader
     objProgram.setUniformValue("projection", projectionM);
     objProgram.setUniformValue("view", viewM);
-    objProgram.setUniformValue("model", modelM);
+    objProgram.setUniformValue("model", curData->transform);
     objProgram.setUniformValue("viewPos", cameraLoc);
 //    objProgram.setUniformValue("uLightLocation", lightCation);
 //    objProgram.setUniformValue("sTexture", 0);
@@ -110,32 +116,25 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat)); //vpoints
     objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat)); //tpoints
     objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat)); //npoints
-//    f->glEnableVertexAttribArray(0);
-//    f->glEnableVertexAttribArray(1); // Attribute indexes were received from calls to glGetAttribLocation, or passed into glBindAttribLocation.
-//    f->glEnableVertexAttribArray(2);
-//    //triangle
-//    // offset
-//    GLintptr vertex_position_offset = 0 * sizeof(float);
-//    GLintptr vertex_texcoord_offset = 3 * sizeof(float) * vindices.size();
-//    GLintptr vertex_normal_offset = 3 * sizeof(float) *  vindices.size() + 2 * sizeof(float) * tindices.size();
-//    f->glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(GLfloat), (GLvoid*)vertex_position_offset);
-//    f->glVertexAttribPointer(1, 2, GL_FLOAT, false, 2 * sizeof(GLfloat), (GLvoid*)vertex_texcoord_offset);
-//    f->glVertexAttribPointer(2, 3, GL_FLOAT, false, 3 * sizeof(GLfloat), (GLvoid*)vertex_normal_offset);
 
     f->glDrawArrays(GL_TRIANGLES, 0, vertPoints_.count() / 3);
-//    QOpenGLVertexArrayObject::Binder bind(&vao);
-//    vao.bind();
-//    f->glDrawElements(GL_TRIANGLES, vindices.size(), GL_UNSIGNED_INT, (GLvoid *)0);
-
     //end here
     objProgram.disableAttributeArray(0);
     objProgram.disableAttributeArray(1);
     objProgram.disableAttributeArray(2);
 
     objTexture->release();
-    vbo.release();
-    vao.release();
-    ebo.release();
+    curData->vbo.release();
+//    curData->ebo.release();
     objProgram.release();
     f->glDisable(GL_DEPTH_TEST);
 }
+
+void ObjRender::unLoad()
+{
+//    curData->vbo.bind();
+    curData->vbo.destroy();
+    qDebug() << curData->vbo.size();
+//    curData->ebo.destroy();
+}
+

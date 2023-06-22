@@ -21,7 +21,8 @@ HEADERS += \
     ObjRender.h \
     OpenGLWidgets.h \
     widget.h \
-    camera.h
+    camera.h \
+    convhull_3d.h
 
 RESOURCES += \
     shaders.qrc \
