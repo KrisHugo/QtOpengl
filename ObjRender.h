@@ -13,7 +13,7 @@ class ObjRender
 public:
     ObjRender();
     ~ObjRender();
-    void initsize(ObjData &objData);
+    void initsize(ObjData &objData, bool isCH = false);
     void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QVector3D cameraLocation);
     void unLoad();
     QOpenGLShaderProgram objProgram;
@@ -23,7 +23,7 @@ private:
     QVector<unsigned int> vindices, tindices, nindices;
 
     QVector<float> vertPoints_, texturePoints_, normalPoints_;
-    QOpenGLVertexArrayObject vao;
+//    QOpenGLVertexArrayObject vao;
 };
 
 #endif // OBJRENDER_H

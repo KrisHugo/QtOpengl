@@ -4,6 +4,8 @@
 #include <QFile>
 #include <regex>
 
+
+
 void ObjLoader::push_back_vertexIndex(ObjData &objData, int currentFacet, QVector<int> vert)
 {
     objData.facets[currentFacet].vpointsIndex.push_back(vert[0]);
@@ -33,7 +35,7 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
 //    QVector<float> vertextPoints, texturePoints, normalPoints;
     int currentObj = -1, currentFacet = -1;
 //    QVector<std::tuple<int,int,int>> facesIndexs;
-//插入初始t, n
+    //插入初始t, n
     objData.tPoints.push_back(0);
     objData.tPoints.push_back(1);
 
@@ -115,11 +117,8 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
 //                qDebug() << "i:" << QString::number(i);
                 QByteArray str = strValues[i];
                 QList<QByteArray> intStr = str.split('/');
-//                qDebug() << intStr;
                 int v, t, n;
-//                qDebug() << intStr;
                 v = intStr.first().toInt();
-//                qDebug() <<"v:"<< QString::number(v);
                 if (intStr.size() == 1){
                     t = 0;
                     n = 0;
@@ -136,7 +135,7 @@ bool ObjLoader::Load(QString fileName, ObjData &objData)
                     t = intStr.at(1).toInt();
                     n = intStr.last().toInt();
                 }
-
+                //修正vpoint索引
                 v--;
 //                qDebug() <<"t:"<< QString::number(t);
 //                qDebug() <<"n:"<< QString::number(n);

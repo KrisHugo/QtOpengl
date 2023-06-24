@@ -12,7 +12,6 @@
 #include <QTreeWidgetItem>
 #include <QFileDialog>
 #include "OpenGLWidgets.h"
-#include "ObjLoader.h"
 #include "ObjData.h"
 class TreeView :public QTreeWidget
 {
@@ -25,35 +24,41 @@ class Widget : public QWidget
 {
     Q_OBJECT
 
-public slots:
-    void SelectFile();
+//public slots:
 
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
 
-//    bool eventFilter(QObject *obj, QEvent *event) override;
+    //    bool eventFilter(QObject *obj, QEvent *event) override;
 protected:
     bool loadOnDetail(ObjData &objData);
     QString Vector3D2String(QVector<float> &points, int index);
     QString Vector2D2String(QVector<float> &points, int index);
 
+protected slots:
+    void SelectFile();
+    void loadModelCH();
 private:
     const static int m_STypeRole = Qt::UserRole;
 
     int loadFileFlag;
     QMenuBar *mainMenuBar;
     QMenu *mainMenu;
+    QMenu *editMenu;
+
     QAction *openAction;
     QAction *newAction;
+
+    QAction *chAction;
 //    QToolBar *compsBoxToolBar;
     QLabel *listComp;
     QLabel *lbl;
     QLabel *fileStatus;
     TreeView *dataView;
     OpenGLWidget *openGL;
-    ObjData loadedObj;
+    ObjData *loadedObj = nullptr;
 
     //节点类型
     enum NodeType

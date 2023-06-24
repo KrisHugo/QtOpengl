@@ -1,4 +1,7 @@
+#define CONVHULL_3D_ENABLE
 #include "objdata.h"
+
+
 
 ObjData::ObjData(): uid(),
     vPoints(), tPoints(), nPoints(), objects(), facets(),
@@ -27,36 +30,73 @@ facet::facet(QUuid _uid,
     npointsIndex = _npointsIndex;
 }
 
-void ObjData::LoadOnOpenGL(QVector<float> &vertPoints_, QVector<float> &texturePoints_, QVector<float> &normalPoints_){
-    vertPoints_.clear();
-    texturePoints_.clear();
-    normalPoints_.clear();
-    //only extract the points which in one of the faces, and throw the others.
-    //but only available for triangle facet
-    for(auto &verFaceInfo : facets){
-        for(int i = 0; i < verFaceInfo.vpointsIndex.size(); i++){
-            unsigned int vIndex = verFaceInfo.vpointsIndex[i];
-            //            qDebug() << "v" << QString::number(vIndex);
-            unsigned int tIndex = verFaceInfo.tpointsIndex[i];
-            //            qDebug() << "t" << QString::number(tIndex);
-            unsigned int nIndex = verFaceInfo.npointsIndex[i];
-            //            qDebug() << "n" << QString::number(nIndex);
-            //            int vPointSizes = objData.vPoints.size() / 3;
-            //            int tPointSizes = objData.tPoints.size() / 2;
-            //            int nPointSizes = objData.nPoints.size() / 3;
-            vertPoints_ << vPoints.at((vIndex) * 3);
-            vertPoints_ << vPoints.at((vIndex) * 3 + 1);
-            vertPoints_ << vPoints.at((vIndex) * 3 + 2);
+void ObjData::LoadOnOpenGL(QVector<float> &vertPoints, QVector<float> &texturePoints, QVector<float> &normalPoints, bool isCH = false){
+    vertPoints.clear();
+    texturePoints.clear();
+    normalPoints.clear();
+    if(isCH){
+        int* faceIndices = nullptr;
+        int nFaces = 0;
+        vertices = nullptr;
+        Transform_CH_Vertices(vPoints, vertices);
+        if(vertices == nullptr) qDebug() << "test";
+        convhull_3d_build(vertices, vPoints.size() / 3, &faceIndices, &nFaces);
+        if(vertices == nullptr) return;
+        qDebug() << "convhull build over :" << nFaces;
+        for(int i = 0; i < nFaces; i++){
+            for(int j = 0; j < 3; j++){
+                vertPoints << vertices[faceIndices[i * 3 + j]].x;
+                vertPoints << vertices[faceIndices[i * 3 + j]].y;
+                vertPoints << vertices[faceIndices[i * 3 + j]].z;
 
-            texturePoints_ << tPoints.at((tIndex) * 2);
-            texturePoints_ << tPoints.at((tIndex) * 2 + 1);
+                texturePoints << 0;
+                texturePoints << 1;
 
-            normalPoints_ << nPoints.at((nIndex) * 3);
-            normalPoints_ << nPoints.at((nIndex) * 3 + 1);
-            normalPoints_ << nPoints.at((nIndex) * 3 + 2);
-            //            qDebug() << "test";
+                normalPoints << 0;
+                normalPoints << 0;
+                normalPoints << 1;
+            }
+        }
+        qDebug() << vertPoints.size();
+
+        free(vertices);
+        free(faceIndices);
+    }
+    else{
+        //only extract the points which in one of the faces, and throw the others.
+        //but only available for triangle facet
+        for(auto &verFaceInfo : facets){
+            for(int i = 0; i < verFaceInfo.vpointsIndex.size(); i++){
+                unsigned int vIndex = verFaceInfo.vpointsIndex[i];
+                unsigned int tIndex = verFaceInfo.tpointsIndex[i];
+                unsigned int nIndex = verFaceInfo.npointsIndex[i];
+
+                vertPoints << vPoints.at((vIndex) * 3);
+                vertPoints << vPoints.at((vIndex) * 3 + 1);
+                vertPoints << vPoints.at((vIndex) * 3 + 2);
+
+                texturePoints << tPoints.at((tIndex) * 2);
+                texturePoints << tPoints.at((tIndex) * 2 + 1);
+
+                normalPoints << nPoints.at((nIndex) * 3);
+                normalPoints << nPoints.at((nIndex) * 3 + 1);
+                normalPoints << nPoints.at((nIndex) * 3 + 2);
+            }
         }
     }
+}
+
+void ObjData::Transform_CH_Vertices(QVector<float> &vertPoints, ch_vertex *&vertices)
+{
+    int num = vertPoints.size() / 3;
+    vertices = (ch_vertex*)malloc(num * sizeof(ch_vertex));
+    for (int i = 0; i < num; i++) {
+        vertices[i].x = vertPoints[i * 3];
+        vertices[i].y = vertPoints[i * 3 + 1];
+        vertices[i].z = vertPoints[i * 3 + 2];
+        qDebug() << i << ":" << num << ";" << vertices[i].x << "," << vertices[i].y << ","  << vertices[i].z ;
+    }
+    qDebug() << "Transform over";
 }
 
 void ObjData::Rotate(float angleX_ = 0.0, float angleY_ = 0.0, float angleZ_ = 0.0){
@@ -64,33 +104,3 @@ void ObjData::Rotate(float angleX_ = 0.0, float angleY_ = 0.0, float angleZ_ = 0
     transform.rotate(angleY_,0,1,0);
     transform.rotate(angleZ_,0,0,1);
 }
-
-
-//Group::Group(){
-//    facets = QVector<QVector<std::tuple<int,int,int>>>();
-//}
-//Group::Group(QString _matrial){
-//    uid = QUuid::createUuid();
-//    matrial = _matrial;
-//    facets = QVector<QVector<std::tuple<int,int,int>>>();
-//}
-//Group::Group(QUuid _uid, QString _matrial, QVector<QVector<std::tuple<int,int,int>>> &_facets){
-//    uid = _uid;
-//    matrial = _matrial;
-//    facets = _facets;
-//}
-
-//Obj::Obj(){
-//    uid = QUuid::createUuid();
-//    groups = QVector<Group>();
-//}
-//Obj::Obj(QString _objName){
-//    uid = QUuid::createUuid();
-//    objName = _objName;
-//    groups = QVector<Group>();
-//}
-//Obj::Obj(QUuid _uid, QString _objName, QVector<Group> &_groups){
-//    uid = _uid;
-//    objName = _objName;
-//    groups = _groups;
-//}

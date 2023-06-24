@@ -129,13 +129,14 @@ void OpenGLWidget::paintGL()
 //    drawLamp();
 
     if(loadingFlag){
+        qDebug() << "render test";
         drawModel();
     }
     update();
 }
 
-void OpenGLWidget::loadModel(ObjData &objData){
-    objRender.initsize(objData);
+void OpenGLWidget::loadModel(ObjData &objData, bool isCH){
+    objRender.initsize(objData, isCH);
     loadingFlag = true;
 }
 

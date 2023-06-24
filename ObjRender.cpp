@@ -10,48 +10,40 @@ ObjRender::~ObjRender(){
 //    ebo.destroy();
 }
 
-void ObjRender::initsize(ObjData &objData)
+void ObjRender::initsize(ObjData &objData, bool isCH)
 {
     curData = &objData;
-//    qDebug() << "test1";
     if(curData->vPoints.size() <= 0 || curData->nPoints.size() <= 0 || curData->tPoints.size() <= 0){
         qDebug("Load failed");
         return;
     }
     QVector<float> points;
-
-    curData->LoadOnOpenGL(vertPoints_, texturePoints_, normalPoints_);
+    curData->LoadOnOpenGL(vertPoints_, texturePoints_, normalPoints_, isCH);
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
-//    qDebug() << "test2";
 
-//    vao.create();
     curData->vbo.create();
     curData->ebo.create();
-    //VAO
-//    vao.bind();
     //VBO
     curData->vbo.bind();
     curData->vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
     curData->vbo.allocate(points.data(), points.size() * sizeof(float)); // save in buffer
-//    qDebug() << "test3";
 
+    //actually doesn't work.
     //EBO
-    QVector<GLuint> indices;
-    foreach(facet face, curData->facets){
-        vindices << face.vpointsIndex;
-        tindices << face.tpointsIndex;
-        nindices << face.npointsIndex;
-    }
-    //    qDebug() << "test5";
-    indices << vindices << tindices << nindices;
-//        qDebug() << "test6";
+//    QVector<GLuint> indices;
+//    foreach(facet face, curData->facets){
+//        vindices << face.vpointsIndex;
+//        tindices << face.tpointsIndex;
+//        nindices << face.npointsIndex;
+//    }
+//    indices << vindices << tindices << nindices;
 //    //创建IBO
 //    curData->ebo.bind();
 //    curData->ebo.setUsagePattern(QOpenGLBuffer::StaticDraw);
 //    // 初始化IBO
 //    curData->ebo.allocate(indices.data(), indices.size() * sizeof(GLuint));
 
-    //actually doesn't works.
+    //actually doesn't work.
     //Texture
     objTexture = new QOpenGLTexture(QImage(":/container2.png").mirrored());
     // Set nearest filtering mode for texture minification
@@ -66,8 +58,6 @@ void ObjRender::initsize(ObjData &objData)
 //    curData->ebo.release();
 //    vao.release();
 //    objProgram.release();
-
-
     curData->transform.translate(QVector3D(0.0f,  0.0f,  0.0f));
 }
 

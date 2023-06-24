@@ -13,7 +13,7 @@ SOURCES += \
     OpenGLWidgets.cpp \
     main.cpp \
     widget.cpp \
-    camera.cpp
+    camera.cpp \
 
 HEADERS += \
     ObjData.h \
@@ -22,7 +22,7 @@ HEADERS += \
     OpenGLWidgets.h \
     widget.h \
     camera.h \
-    convhull_3d.h
+    convhull_3d.h \
 
 RESOURCES += \
     shaders.qrc \

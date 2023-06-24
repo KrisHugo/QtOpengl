@@ -6,6 +6,8 @@
 #include <QSet>
 #include <QUuid>
 #include <QOpenGLBuffer>
+
+#include "convhull_3d.h"
 //// 材质信息结构体
 //class MaterialInfo
 //{
@@ -23,54 +25,6 @@
 //    uint TexObjBumpMap;
 //};
 
-//// 对象信息结构体
-//class ObjObject
-//{
-//public:
-//    int nMaterialID; // 纹理ID
-//    bool bHasTexture; // 是否具有纹理映射
-//    bool bHasNormal; // 是否具有法线
-//    QVector<QVector3D> PosVerts; // 对象的顶点
-//    QVector<QVector3D> Normals; // 对象的法向量
-//    QVector<QVector2D> Texcoords; // 纹理UV坐标
-//    QVector<unsigned short> Indexes; // 对象的顶点索引
-//    unsigned int nNumIndexes; // 索引数目
-//    uint nPosVBO;
-//    uint nNormVBO;
-//    uint nTexcoordVBO;
-//    uint nIndexVBO;
-//};
-
-////模型信息结构体
-//class ObjModel
-//{
-//public:
-//    bool bIsTextured; //是否使用纹理
-//    QVector<MaterialInfo> material; // 材质信息
-//    QVector<ObjObject> group; // 模型中对象信息
-//};
-
-//class Group{
-//public:
-//    Group();
-//    Group(QString matrial);
-//    Group(QString matrial, QVector<QVector<std::tuple<int,int,int>>> &facets);
-//    Group(QUuid uid, QString matrial, QVector<QVector<std::tuple<int,int,int>>> &facets);
-//    QUuid uid;
-//    QString matrial;//用于提取mtl数据的matrial信息
-//    QVector<QVector<std::tuple<int,int,int>>> facets;//通过facets的索引来确定这个group的facets有哪些, 每个faces的顶点index是什么
-//};
-
-//class Obj{
-//public:
-//    Obj();
-//    Obj(QString objName);
-//    Obj(QUuid uid, QString objName, QVector<Group> &groups);
-//    QUuid uid;
-//    QString objName;
-//    QVector<Group> groups;
-//};
-
 class facet{
 public:
     facet();
@@ -78,7 +32,7 @@ public:
            QVector<unsigned int> &_vpiontsIndex,
            QVector<unsigned int> &_tpointsIndex,
            QVector<unsigned int> &_npointsIndex);
-//    facets(QUuid _uid);
+
     QUuid uid;
     // v v/t/n v/t v//n
     QVector<unsigned int> vpointsIndex;//we haven't know the size of a facets until we loaded it.
@@ -102,15 +56,12 @@ public:
     ObjData();
     ~ObjData();
 
-    void LoadOnOpenGL(QVector<float> &vertPoints_, QVector<float> &texturePoints_, QVector<float> &normalPoints_);
     void Rotate(float angleX_, float angleY_, float angleZ_);
-
-    //    void load(QString file, QVector<float> &vPoints, QVector<float> &tPoints, QVector<float> &nPoints);
+    void LoadOnOpenGL(QVector<float> &vertPoints, QVector<float> &texturePoints, QVector<float> &normalPoints, bool isCH);
+    void Transform_CH_Vertices(QVector<float> &vertPoints, ch_vertex *&vertices);
     QUuid uid;
     QString file;
-    QVector<float> vPoints;
-    QVector<float> tPoints;
-    QVector<float> nPoints;
+    QVector<float> vPoints, tPoints, nPoints;
     QVector<QString> objects;
     QVector<facet> facets;
     QHash<QString, QVector<int>> facetIndexesInObj; //for modifing a whole part of a objModel.
@@ -123,6 +74,8 @@ public:
 
     QOpenGLBuffer vbo;
     QOpenGLBuffer ebo;
+
+    ch_vertex* vertices = nullptr;
 };
 
 #endif // OBJDATA_H

@@ -19,7 +19,7 @@ class OpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 public:
     OpenGLWidget(QWidget *parent = nullptr);
     ~OpenGLWidget();
-    void loadModel(ObjData &objdata);
+    void loadModel(ObjData &objdata, bool isCH);
     void unLoadModel();
     bool IsLoad();
 protected:
