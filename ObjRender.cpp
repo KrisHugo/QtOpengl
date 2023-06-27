@@ -4,10 +4,11 @@
 ObjRender::ObjRender()
     : vertPoints_(), texturePoints_(), normalPoints_()
 {
+
 }
-ObjRender::~ObjRender(){
-//    vbo.destroy();
-//    ebo.destroy();
+ObjRender::~ObjRender()
+{
+
 }
 
 void ObjRender::initsize(ObjData &objData, bool isCH)
@@ -29,21 +30,6 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
     curData->vbo.allocate(points.data(), points.size() * sizeof(float)); // save in buffer
 
     //actually doesn't work.
-    //EBO
-//    QVector<GLuint> indices;
-//    foreach(facet face, curData->facets){
-//        vindices << face.vpointsIndex;
-//        tindices << face.tpointsIndex;
-//        nindices << face.npointsIndex;
-//    }
-//    indices << vindices << tindices << nindices;
-//    //创建IBO
-//    curData->ebo.bind();
-//    curData->ebo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-//    // 初始化IBO
-//    curData->ebo.allocate(indices.data(), indices.size() * sizeof(GLuint));
-
-    //actually doesn't work.
     //Texture
     objTexture = new QOpenGLTexture(QImage(":/container2.png").mirrored());
     // Set nearest filtering mode for texture minification
@@ -55,13 +41,10 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
     objTexture->setWrapMode(QOpenGLTexture::Repeat);
 
     curData->vbo.release();
-//    curData->ebo.release();
-//    vao.release();
-//    objProgram.release();
     curData->transform.translate(QVector3D(0.0f,  0.0f,  0.0f));
 }
 
-void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QVector3D cameraLoc)
+void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QVector3D cameraLoc, bool mode)
 {
     //    qDebug() << "test1";
     if(curData == nullptr){
@@ -73,17 +56,11 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.bind();//shader selected
     curData->vbo.bind();// buffer selected
 //    curData->ebo.bind();// indices buffer selected;
-
-//    qDebug() << vbo.size();
-//    qDebug() << ebo.size();
-//    qDebug() << projectionM
     // shader
     objProgram.setUniformValue("projection", projectionM);
     objProgram.setUniformValue("view", viewM);
     objProgram.setUniformValue("model", curData->transform);
     objProgram.setUniformValue("viewPos", cameraLoc);
-//    objProgram.setUniformValue("uLightLocation", lightCation);
-//    objProgram.setUniformValue("sTexture", 0);
 
     f->glActiveTexture(GL_TEXTURE0);
     objTexture->bind();
@@ -106,8 +83,8 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat)); //vpoints
     objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat)); //tpoints
     objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat)); //npoints
-
-    f->glDrawArrays(GL_TRIANGLES, 0, vertPoints_.count() / 3);
+    qDebug() << mode;
+    f->glDrawArrays((mode? GL_LINE_LOOP : GL_TRIANGLES), 0, vertPoints_.count() / 3);
     //end here
     objProgram.disableAttributeArray(0);
     objProgram.disableAttributeArray(1);
@@ -115,7 +92,7 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
 
     objTexture->release();
     curData->vbo.release();
-//    curData->ebo.release();
+    //curData->ebo.release();
     objProgram.release();
     f->glDisable(GL_DEPTH_TEST);
 }

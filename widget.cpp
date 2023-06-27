@@ -5,6 +5,7 @@
 #include <QOpenGLDebugLogger>
 #include <QMessageBox>
 #include <QDebug>
+#include <QCheckBox>
 #include "ObjLoader.h"
 
 Widget::Widget(QWidget *parent)
@@ -45,12 +46,7 @@ Widget::Widget(QWidget *parent)
     mainMenuBar->addMenu(editMenu);
 
     //2.1 工具栏
-    /*
-    compsBoxToolBar = new QToolBar(tr("组件"), this);
-    compsBoxToolBar->setIconSize(QSize(16,16));
-    compsBoxToolBar->addAction(act);
-    compsBoxToolBar->addAction(act1);
-    */
+
     //2.2 主体
 //    listComp = new QLabel();
     //2.2.1 文本提示框
@@ -66,6 +62,11 @@ Widget::Widget(QWidget *parent)
     dataView->setMaximumWidth(500);
     dataView->setWordWrap(true);
     dataView->setHeaderHidden(true);
+
+    //2.2.2 控制面板
+    QCheckBox *modeCheck = new QCheckBox("线框模式");
+    connect(modeCheck, SIGNAL(stateChanged(int)), openGL, SLOT(SwitchMode(int)));
+
     //2.4 布局
 //    QVBoxLayout *leftLayout = new QVBoxLayout();
     //leftLayout->addWidget(compsBoxToolBar);//把工具栏作为一个widget添加到布局中
@@ -94,8 +95,8 @@ Widget::Widget(QWidget *parent)
     mainLayout->addWidget(openGL);
     mainLayout->addLayout(rightLayout);
     rightLayout->addWidget(fileStatus);
+    rightLayout->addWidget(modeCheck);
     rightLayout->addWidget(dataView, 10000);
-
 //    baseLayout->setAlignment(Qt::AlignLeft | Qt::AlignCenter);
     //2.5 应用布局
     openGL->show();

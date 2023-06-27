@@ -129,7 +129,7 @@ void OpenGLWidget::paintGL()
 //    drawLamp();
 
     if(loadingFlag){
-        qDebug() << "render test";
+//        qDebug() << "render test";
         drawModel();
     }
     update();
@@ -150,11 +150,17 @@ bool OpenGLWidget::IsLoad()
     return loadingFlag;
 }
 
+void OpenGLWidget::SwitchMode(int newMode)
+{
+    qDebug() << newMode;
+    mode = newMode;
+}
+
 void OpenGLWidget::drawModel(){
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     QMatrix4x4 vMatrix = camera.view();
 
-    objRender.render(f, pMatrix_, vMatrix, camera.position());
+    objRender.render(f, pMatrix_, vMatrix, camera.position(), mode);
     update();
 }
 

@@ -14,7 +14,7 @@ public:
     ObjRender();
     ~ObjRender();
     void initsize(ObjData &objData, bool isCH = false);
-    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QVector3D cameraLocation);
+    void render(QOpenGLExtraFunctions *f, QMatrix4x4 &pMatrix, QMatrix4x4 &vMatrix, QVector3D cameraLocation, bool mode);
     void unLoad();
     QOpenGLShaderProgram objProgram;
 private:

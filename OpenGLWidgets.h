@@ -22,6 +22,8 @@ public:
     void loadModel(ObjData &objdata, bool isCH);
     void unLoadModel();
     bool IsLoad();
+public slots:
+    void SwitchMode(int newMode);
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -33,6 +35,7 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
+    bool mode = true;
 
 private:
     bool loadingFlag;
