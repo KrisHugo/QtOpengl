@@ -153,14 +153,14 @@ bool OpenGLWidget::IsLoad()
 void OpenGLWidget::SwitchMode(int newMode)
 {
     qDebug() << newMode;
-    mode = newMode;
+    lineMode = newMode;
 }
 
 void OpenGLWidget::drawModel(){
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     QMatrix4x4 vMatrix = camera.view();
 
-    objRender.render(f, pMatrix_, vMatrix, camera.position(), mode);
+    objRender.render(f, pMatrix_, vMatrix, camera.position(), lineMode);
     update();
 }
 

@@ -35,7 +35,7 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
-    bool mode = true;
+    bool lineMode = false;
 
 private:
     bool loadingFlag;

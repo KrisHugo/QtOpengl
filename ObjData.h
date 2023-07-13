@@ -24,6 +24,12 @@
 //    uint TexObjSpecularMap;
 //    uint TexObjBumpMap;
 //};
+class ConvhullData{
+public:
+    ch_vertex* vertices;
+    int* faceIndices;
+    int nFaces;
+};
 
 class facet{
 public:
@@ -40,6 +46,15 @@ public:
     QVector<unsigned int> npointsIndex;//there might be null while we are loading, so we might check if it exists.
 };
 
+
+class PolarCoord{
+public:
+    unsigned int uid;
+    double r;
+    double theta;
+    double phi;
+    PolarCoord(unsigned int _uid, double _r, double _theta, double _phi);
+};
 
 /*
 class StatusInRender{
@@ -74,8 +89,9 @@ public:
 
     QOpenGLBuffer vbo;
     QOpenGLBuffer ebo;
-
-    ch_vertex* vertices = nullptr;
+    ConvhullData chData;
+    void InsertWatermarks(ch_vertex *vertices, int nVertex, std::string watermark);
 };
+
 
 #endif // OBJDATA_H

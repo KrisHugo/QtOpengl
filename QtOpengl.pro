@@ -11,6 +11,7 @@ SOURCES += \
     ObjLoader.cpp \
     ObjRender.cpp \
     OpenGLWidgets.cpp \
+	binarymask.cpp \
     main.cpp \
     widget.cpp \
     camera.cpp \
