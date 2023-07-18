@@ -33,6 +33,13 @@ facet::facet(QUuid _uid,
 }
 
 void ObjData::InitializeCHData(){
+    if(chData.faceIndices != nullptr){
+        free(chData.faceIndices);
+    }
+    if(chData.vertices != nullptr){
+        free(chData.vertices);
+    }
+
     //生成凸包的这个部分只在LoadOnOpenGL中做了，那意味着没有保存在本地，更加意味着破坏了整个程序应有的解耦性
     chData.faceIndices = nullptr;
     chData.nVertices = vPoints.size() / 3;
@@ -132,6 +139,7 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
     int wmLen = 2, start = 12, alpha = 5;
     int desination = sizeof(CH_FLOAT) - (start + alpha);//确定水印嵌入的起始位置
     quint64 rmask = maskGenerate(desination);//生成位掩码
+    qDebug() << "rmask:" << rmask;
     // 用LSB实现, 后续应该单独写成函数
     // 通过强转指针的方式实现double数的位运算
     {
@@ -139,14 +147,22 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
         for(PolarCoord &pc : polarcoords){
             int wmPart = i % (sizeof(int)/wmLen);
             double *rp = &pc.r;
+            qDebug() << "previous rp:" << *rp;
             quint64 rv = (*((quint64 *)rp) & rmask);
             quint64 lv = (*((quint64 *)rp) & ~rmask);
+            qDebug() << "lv:         " << lv;
+            qDebug() << "previous rv:" << rv;
             rv = rv>>wmLen; //右移留出嵌入水印的空位
+            qDebug() << "moved rv:   " << rv;
             // 通过掩码的方式实现分段位移
             quint64 insert = initialWaterMark(wmvec[j], sizeof(int) - wmPart * wmLen, desination, wmLen);//选取出需要写入的部分, 并左移到需要嵌入的位置
             rv = rv | insert;
+            qDebug() << "inserted rv:" << rv;
             if(wmPart == 0) j++;//水印位被写入完成, 写入下一个水印
-            *rp = (lv | rv);
+            quint64 result = (lv | rv);
+            quint64 *rp2 = &result;
+            pc.r = *(double *)rp2;
+            qDebug() << "modified rp:" << *rp;
             i++;
         }
     }
@@ -158,6 +174,7 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
         double r = pc.r;
         double theta = pc.theta;
         double phi = pc.phi;
+        qDebug() << "before transverse:" << r;
         //对x,y,z写入数据
         //先转换成二进制形式，然后确定尾数位所在位置，然后写入后两位
         //写入方式可以用二进制的移位删除后两位数据然后进行异或操作？

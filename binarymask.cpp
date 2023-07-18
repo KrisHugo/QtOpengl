@@ -2,6 +2,7 @@
 #define BINARYMASK
 
 #include <QtMath>
+#include <QDebug>
 quint64 maskGenerate(int lMaskStartPos)
 {
     return ((quint64)1 << (lMaskStartPos + 1)) - 1;
@@ -12,6 +13,7 @@ quint64 maskGenerate(int lMaskStartPos)
  */
 quint64 initialWaterMark(quint64 value, int position, int destination, int length){
     quint64 mask = ((quint64)1 << (position + 1)) - ((quint64)1 << (position - length + 1));
+    qDebug() << "insert mask:" << mask;
     return (value & mask) << (destination - position);
 }
 
