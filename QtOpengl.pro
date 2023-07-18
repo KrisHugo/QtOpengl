@@ -12,6 +12,7 @@ SOURCES += \
     ObjRender.cpp \
     OpenGLWidgets.cpp \
 	binarymask.cpp \
+	hashWidget.cpp \
     main.cpp \
     widget.cpp \
     camera.cpp \
@@ -21,6 +22,7 @@ HEADERS += \
     ObjLoader.h \
     ObjRender.h \
     OpenGLWidgets.h \
+	hashWidget.h \
     widget.h \
     camera.h \
     convhull_3d.h \

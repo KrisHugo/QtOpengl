@@ -27,6 +27,7 @@
 class ConvhullData{
 public:
     ch_vertex* vertices;
+    int nVertices;
     int* faceIndices;
     int nFaces;
 };
@@ -76,6 +77,7 @@ public:
     void Transform_CH_Vertices(QVector<float> &vertPoints, ch_vertex *&vertices);
     QUuid uid;
     QString file;
+    QString fileHash;
     QVector<float> vPoints, tPoints, nPoints;
     QVector<QString> objects;
     QVector<facet> facets;
@@ -91,6 +93,7 @@ public:
     QOpenGLBuffer ebo;
     ConvhullData chData;
     void InsertWatermarks(ch_vertex *vertices, int nVertex, std::string watermark);
+    void InitializeCHData();
 };
 
 

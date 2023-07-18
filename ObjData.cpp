@@ -32,40 +32,43 @@ facet::facet(QUuid _uid,
     npointsIndex = _npointsIndex;
 }
 
+void ObjData::InitializeCHData(){
+    //生成凸包的这个部分只在LoadOnOpenGL中做了，那意味着没有保存在本地，更加意味着破坏了整个程序应有的解耦性
+    chData.faceIndices = nullptr;
+    chData.nVertices = vPoints.size() / 3;
+    chData.nFaces = 0;
+    chData.vertices = nullptr;
+    Transform_CH_Vertices(vPoints, chData.vertices);
+    if(chData.vertices == nullptr) return;
+    convhull_3d_build(chData.vertices, chData.nVertices, &chData.faceIndices, &chData.nFaces);
+}
+
 void ObjData::LoadOnOpenGL(QVector<float> &vertPoints, QVector<float> &texturePoints, QVector<float> &normalPoints, bool isCH = false){
     vertPoints.clear();
     texturePoints.clear();
     normalPoints.clear();
     if(isCH){
-        //生成凸包的这个部分只在LoadOnOpenGL中做了，那意味着没有保存在本地，更加意味着破坏了整个程序应有的解耦性
-        chData.faceIndices = nullptr;
-        chData.nFaces = 0;
-        chData.vertices = nullptr;
-        Transform_CH_Vertices(vPoints, chData.vertices);
-        if(chData.vertices == nullptr) qDebug() << "test";
-        convhull_3d_build(chData.vertices, vPoints.size() / 3, &chData.faceIndices, &chData.nFaces);
-        //calculate vertex_normal
-        if(chData.vertices == nullptr) return;
+        if(chData.vertices == nullptr) {
+            return;
+        }
+        qDebug() << "before CH check:" << vertPoints.size();
         qDebug() << "convhull build over :" << chData.nFaces;
         for(int i = 0; i < chData.nFaces; i++){
             for(int j = 0; j < 3; j++){
                 vertPoints << chData.vertices[chData.faceIndices[i * 3 + j]].x;
                 vertPoints << chData.vertices[chData.faceIndices[i * 3 + j]].y;
                 vertPoints << chData.vertices[chData.faceIndices[i * 3 + j]].z;
-                //
-                texturePoints << 0;
-                texturePoints << 1;
-
                 // 重新计算顶点法线
                 normalPoints << 0;
                 normalPoints << 0;
                 normalPoints << 1;
+                //
+                texturePoints << 0;
+                texturePoints << 1;
+
             }
         }
-        qDebug() << vertPoints.size();
-
-//        free(chData.vertices);
-//        free(faceIndices);
+        qDebug() << "vertPoint Loaded Check:" << vertPoints.size();
     }
     else{
         //only extract the points which in one of the faces, and throw the others.
@@ -80,12 +83,12 @@ void ObjData::LoadOnOpenGL(QVector<float> &vertPoints, QVector<float> &texturePo
                 vertPoints << vPoints.at((vIndex) * 3 + 1);
                 vertPoints << vPoints.at((vIndex) * 3 + 2);
 
-                texturePoints << tPoints.at((tIndex) * 2);
-                texturePoints << tPoints.at((tIndex) * 2 + 1);
-
                 normalPoints << nPoints.at((nIndex) * 3);
                 normalPoints << nPoints.at((nIndex) * 3 + 1);
                 normalPoints << nPoints.at((nIndex) * 3 + 2);
+
+                texturePoints << tPoints.at((tIndex) * 2);
+                texturePoints << tPoints.at((tIndex) * 2 + 1);
             }
         }
     }
@@ -112,14 +115,16 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
         double x = vertices[i].x;
         double y = vertices[i].y;
         double z = vertices[i].z;
-
+//        qDebug() << x << " " << y << " " << z;
         r = qSqrt(qPow(x, 2) + qPow(y, 2) + qPow(z, 2));
         theta = qAcos(z/r);
         phi = qAtan2(y,x);//arctan 在 y 与 x 比较关系不同时是不同的函数;
         polarcoords.push_back(PolarCoord(i, r, theta, phi));
 
     }
+    //排序
     //根据极坐标角度进行排序
+    //保留原始序号,用于逆排序
 
     //依次将水印信息嵌入r中
     //计算纠错编码,保证水印数据能准确恢复？
@@ -131,7 +136,7 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
     // 通过强转指针的方式实现double数的位运算
     {
         int i = 0, j = 0;
-        for(PolarCoord pc : polarcoords){
+        for(PolarCoord &pc : polarcoords){
             int wmPart = i % (sizeof(int)/wmLen);
             double *rp = &pc.r;
             quint64 rv = (*((quint64 *)rp) & rmask);
@@ -139,12 +144,13 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
             rv = rv>>wmLen; //右移留出嵌入水印的空位
             // 通过掩码的方式实现分段位移
             quint64 insert = initialWaterMark(wmvec[j], sizeof(int) - wmPart * wmLen, desination, wmLen);//选取出需要写入的部分, 并左移到需要嵌入的位置
-            rv = rv|insert;
+            rv = rv | insert;
             if(wmPart == 0) j++;//水印位被写入完成, 写入下一个水印
-            *rp = (lv & rv);
+            *rp = (lv | rv);
             i++;
         }
     }
+    //逆排序
 
     //坐标轴转换, 写回数据
     for(PolarCoord pc : polarcoords){
@@ -156,11 +162,11 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
         //先转换成二进制形式，然后确定尾数位所在位置，然后写入后两位
         //写入方式可以用二进制的移位删除后两位数据然后进行异或操作？
         //不能用二进制的方式来处理，而且需要保证水印强度
+        //float from double?
         vertices[i].x = r * qSin(theta) * qCos(phi);
         vertices[i].y = r * qSin(theta) * qSin(phi);
         vertices[i].z = r * qCos(theta);
     }
-
 }
 
 //void ObjData::ExtractWatermark(){

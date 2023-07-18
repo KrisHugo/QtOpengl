@@ -7,7 +7,7 @@
 #include <QKeyEvent>
 #include <QtMath>
 #include <QElapsedTimer>
-
+#include <QOpenGLDebugLogger>
 static const float vertices[] = {
     // positions          // normals           // texture coords
     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -93,6 +93,11 @@ void OpenGLWidget::initializeGL()
 
     container = initializeTexture(":/container2.png");
     container_specular = initializeTexture(":/container2_specular.png");
+
+
+    QOpenGLDebugLogger logger;
+    logger.initialize(); // 初始化日志记录器
+    logger.startLogging(); // 开始记录日志
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -109,7 +114,7 @@ void OpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
 //    static constexpr QVector3D cubePositions[] = {
-////        QVector3D( 0.0f,  0.0f,  0.0f),
+//        QVector3D( 0.0f,  0.0f,  0.0f),
 //        QVector3D( 2.0f,  5.0f, -15.0f),
 //        QVector3D(-1.5f, -2.2f, -2.5f),
 //        QVector3D(-3.8f, -2.0f, -12.3f),
@@ -129,9 +134,9 @@ void OpenGLWidget::paintGL()
 //    drawLamp();
 
     if(loadingFlag){
-//        qDebug() << "render test";
         drawModel();
     }
+
     update();
 }
 
@@ -152,7 +157,7 @@ bool OpenGLWidget::IsLoad()
 
 void OpenGLWidget::SwitchMode(int newMode)
 {
-    qDebug() << newMode;
+    qDebug() << "Render Mode Switch to " << newMode;
     lineMode = newMode;
 }
 
@@ -161,19 +166,11 @@ void OpenGLWidget::drawModel(){
     QMatrix4x4 vMatrix = camera.view();
 
     objRender.render(f, pMatrix_, vMatrix, camera.position(), lineMode);
-    update();
 }
 
 
 void OpenGLWidget::slotTimeout()
 {
-//    qDebug() << "test";
-    // rotate the obj
-//    angleX_ += 5;
-//    angleY_ += 5;
-//    angleZ_ += 5;
-//    QVector3D position3 = QVector3D( angleX_,  angleY,  anglZ_);
-//    drawCube(position3, 20);
     update();
 }
 
@@ -182,12 +179,12 @@ bool OpenGLWidget::eventFilter(QObject *obj, QEvent *event)
 
     if (event->type() == QEvent::KeyPress)
     {
-        qDebug() << event->type();
+//        qDebug() << event->type();
         return QWidget::eventFilter(obj, event);
     }
     else if(event->type() == QEvent::KeyRelease)
     {
-        qDebug() << event->type();
+//        qDebug() << event->type();
         return QWidget::eventFilter(obj, event);
     }
     else
@@ -199,7 +196,7 @@ bool OpenGLWidget::eventFilter(QObject *obj, QEvent *event)
 
 void OpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    qDebug() << event->key();
+//    qDebug() << event->key();
 
     switch (event->key()) {
     case Qt::Key_W:
@@ -222,7 +219,7 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event)
 
 void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    qDebug() << event->key();
+//    qDebug() << event->key();
 
     switch (event->key()) {
     case Qt::Key_W:

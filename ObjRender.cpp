@@ -21,6 +21,8 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
     QVector<float> points;
     curData->LoadOnOpenGL(vertPoints_, texturePoints_, normalPoints_, isCH);
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
+    qDebug() << "Render Initialize Checked:" << points.size();
+
 
     curData->vbo.create();
     curData->ebo.create();
@@ -46,16 +48,14 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
 
 void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QVector3D cameraLoc, bool mode)
 {
-    //    qDebug() << "test1";
     if(curData == nullptr){
         qDebug("Unloaded");
         return;
     }
-
+//    qDebug() << "Render State Checked";
     f->glEnable(GL_DEPTH_TEST);
     objProgram.bind();//shader selected
     curData->vbo.bind();// buffer selected
-//    curData->ebo.bind();// indices buffer selected;
     // shader
     objProgram.setUniformValue("projection", projectionM);
     objProgram.setUniformValue("view", viewM);
@@ -83,7 +83,7 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat)); //vpoints
     objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat)); //tpoints
     objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat)); //npoints
-    qDebug() << mode;
+
     f->glDrawArrays((mode? GL_LINE_LOOP : GL_TRIANGLES), 0, vertPoints_.count() / 3);
     //end here
     objProgram.disableAttributeArray(0);
@@ -92,16 +92,13 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
 
     objTexture->release();
     curData->vbo.release();
-    //curData->ebo.release();
     objProgram.release();
     f->glDisable(GL_DEPTH_TEST);
 }
 
 void ObjRender::unLoad()
 {
-//    curData->vbo.bind();
     curData->vbo.destroy();
-    qDebug() << curData->vbo.size();
-//    curData->ebo.destroy();
+    qDebug() << "unloaded check:"<< curData->vbo.size();
 }
 

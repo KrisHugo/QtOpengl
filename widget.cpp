@@ -2,8 +2,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QEvent>
-#include <QOpenGLDebugLogger>
-#include <QMessageBox>
 #include <QDebug>
 #include <QCheckBox>
 #include "ObjLoader.h"
@@ -28,7 +26,7 @@ Widget::Widget(QWidget *parent)
     openAction = new QAction("打开");		//包括图标路径、长时间停留提示、父指针
 //    openAction->setShortcut(QKeySequence::Open);
     openAction->setStatusTip("打开文件");
-    connect(openAction, SIGNAL(triggered(bool)), this, SLOT(SelectFile()));
+    connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openFileBrowser()));
 
     mainMenu->addAction(newAction);
     mainMenu->addAction(openAction);
@@ -39,16 +37,20 @@ Widget::Widget(QWidget *parent)
 
     chAction = new QAction("创建凸面");
     connect(chAction, SIGNAL(triggered(bool)), this, SLOT(loadModelCH()));
-
     editMenu->addAction(chAction);
+
+    hashMenu = new QMenu("哈希操作");
+    shaAction = new QAction("SHA256");
+    connect(shaAction, SIGNAL(triggered(bool)), this, SLOT(openSHADialog()));
+    hashMenu->addAction(shaAction);
+
 
     mainMenuBar->addMenu(mainMenu);
     mainMenuBar->addMenu(editMenu);
-
+    mainMenuBar->addMenu(hashMenu);
     //2.1 工具栏
 
     //2.2 主体
-//    listComp = new QLabel();
     //2.2.1 文本提示框
     //2.3 OpenGL renderer
     openGL = new OpenGLWidget();
@@ -63,32 +65,13 @@ Widget::Widget(QWidget *parent)
     dataView->setWordWrap(true);
     dataView->setHeaderHidden(true);
 
-    //2.2.2 控制面板
+    //2.3.2 控制面板
     QCheckBox *modeCheck = new QCheckBox("线框模式");
     connect(modeCheck, SIGNAL(stateChanged(int)), openGL, SLOT(SwitchMode(int)));
 
     //2.4 布局
-//    QVBoxLayout *leftLayout = new QVBoxLayout();
-    //leftLayout->addWidget(compsBoxToolBar);//把工具栏作为一个widget添加到布局中
-//    leftLayout->addWidget(listComp);
-//    leftLayout->addWidget(lbl);
-//    leftLayout->addWidget(txtTipComp);
-//    QVBoxLayout *centerLayout = new QVBoxLayout();
-//    centerLayout->addWidget(renderName);
-//    centerLayout->addWidget(renderer);
-
-//    centerLayout->setStretchFactor(renderName, 1);
-//    centerLayout->setStretchFactor(renderer, 5);
-//    renderer->move(250,250);
     QVBoxLayout *rightLayout = new QVBoxLayout();
     QHBoxLayout *mainLayout = new QHBoxLayout();
-//    mainLayout->addLayout(leftLayout);
-//    mainLayout->addLayout(centerLayout);
-//    mainLayout->setStretchFactor(leftLayout, 1);
-//    mainLayout->setStretchFactor(centerLayout, 5);
-//    mainLayout->setStretchFactor(rightLayout, 1);
-
-
     QVBoxLayout *baseLayout = new QVBoxLayout(this);
     baseLayout->addWidget(mainMenuBar);
     baseLayout->addLayout(mainLayout);
@@ -97,15 +80,15 @@ Widget::Widget(QWidget *parent)
     rightLayout->addWidget(fileStatus);
     rightLayout->addWidget(modeCheck);
     rightLayout->addWidget(dataView, 10000);
-//    baseLayout->setAlignment(Qt::AlignLeft | Qt::AlignCenter);
     //2.5 应用布局
     openGL->show();
-//    renderer->installEventFilter(renderer);
 
 
-    QOpenGLDebugLogger logger;
-    logger.initialize(); // 初始化日志记录器
-    logger.startLogging(); // 开始记录日志
+
+    //报错处理
+//    connect(fileHashGenerator, SIGNAL(errorOccurred(QString&)),
+//                     this, SLOT(showError(QString&)));
+
 }
 
 
@@ -114,15 +97,8 @@ Widget::~Widget()
 {
 }
 
-//bool Widget::eventFilter(QObject *obj, QEvent *event)
-//{
-//    qDebug() << event->type();
-//    return QWidget::eventFilter(obj, event);
 
-//}
-
-
-void Widget::SelectFile(){
+void Widget::openFileBrowser(){
     QFileDialog *objFile = new QFileDialog(this);
     objFile->setWindowTitle("选择三维文件");
     objFile->setNameFilter("*.obj");
@@ -164,6 +140,23 @@ void Widget::SelectFile(){
     }
 }
 
+void Widget::openSHADialog()
+{
+    if(loadedObj == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未加载模型文件"),
+                              QMessageBox::Apply);
+        return;
+    }
+    QString objStr = loadedObj->file;
+    hashDialog = new HashDialog(this, objStr, HashType::SHA256);
+    connect(hashDialog, SIGNAL(hashStringGenerated(QString&)),
+            this, SLOT(saveHashString(QString&)));
+    connect(hashDialog, SIGNAL(HashStringInsert()), this, SLOT(LoadWaterMarkedModel()));
+    hashDialog->show();
+    qDebug("生成Hash窗口");
+}
 
 void Widget::loadModelCH(){
     if(loadedObj == nullptr) {
@@ -176,8 +169,11 @@ void Widget::loadModelCH(){
     if(openGL->IsLoad()){
         openGL->unLoadModel();
     }
+    //loadedObj->generateCHData;
+    loadedObj->InitializeCHData();
     openGL->loadModel(*loadedObj, true);
 }
+
 
 bool Widget::loadOnDetail(ObjData &objData){
     //Clear All
@@ -246,6 +242,17 @@ QString Widget::Vector2D2String(QVector<float> &points, int index){
     return QString("(%1,%2)").arg(QString::number(points[index]), QString::number(points[index + 1]));
 }
 
+void Widget::LoadWaterMarkedModel(){
+    if(loadedObj == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未加载模型文件"),
+                              QMessageBox::Apply);
+        return;
+    }
+    loadedObj->InsertWatermarks(loadedObj->chData.vertices, loadedObj->chData.nVertices, loadedObj->fileHash.toStdString());
+    openGL->loadModel(*loadedObj, true);
+}
 
 
 

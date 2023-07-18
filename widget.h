@@ -11,8 +11,12 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QFileDialog>
+#include <QMessageBox>
 #include "OpenGLWidgets.h"
 #include "ObjData.h"
+#include "filehashgenerator.h"
+#include "hashWidget.h"
+
 class TreeView :public QTreeWidget
 {
 public:
@@ -30,16 +34,24 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-
-    //    bool eventFilter(QObject *obj, QEvent *event) override;
 protected:
+    FileHashGenerator *fileHashGenerator;
     bool loadOnDetail(ObjData &objData);
     QString Vector3D2String(QVector<float> &points, int index);
     QString Vector2D2String(QVector<float> &points, int index);
-
 protected slots:
-    void SelectFile();
+    void openFileBrowser();
     void loadModelCH();
+    void openSHADialog();
+    void LoadWaterMarkedModel();
+    void showError(QString& errorMessage)
+    {
+        QMessageBox::critical(this, "Error", errorMessage);
+    }
+    void saveHashString(QString& hashString)
+    {
+        loadedObj->fileHash = hashString;
+    }
 private:
     const static int m_STypeRole = Qt::UserRole;
 
@@ -47,12 +59,17 @@ private:
     QMenuBar *mainMenuBar;
     QMenu *mainMenu;
     QMenu *editMenu;
+    QMenu *hashMenu;
 
     QAction *openAction;
     QAction *newAction;
 
     QAction *chAction;
-//    QToolBar *compsBoxToolBar;
+
+    QAction *shaAction;
+
+    HashDialog *hashDialog;
+
     QLabel *listComp;
     QLabel *lbl;
     QLabel *fileStatus;
@@ -70,8 +87,6 @@ private:
         NT_Node,
         NT_ENode
     };
-
-
 
 
 };
