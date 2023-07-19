@@ -136,7 +136,8 @@ void ObjData::InsertWatermarks(ch_vertex *vertices, int nVertex, std::string wat
     //依次将水印信息嵌入r中
     //计算纠错编码,保证水印数据能准确恢复？
     //确定嵌入位置和长度
-    int wmLen = 2, start = 12, alpha = 5;
+    //alpha 1-52
+    int wmLen = 2, start = 12, alpha = 10;
     int desination = sizeof(CH_FLOAT) - (start + alpha);//确定水印嵌入的起始位置
     quint64 rmask = maskGenerate(desination);//生成位掩码
     qDebug() << "rmask:" << rmask;
