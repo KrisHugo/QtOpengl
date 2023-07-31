@@ -16,7 +16,7 @@
 #include "ObjData.h"
 #include "filehashgenerator.h"
 #include "hashWidget.h"
-
+#include "extractWidget.h"
 class TreeView :public QTreeWidget
 {
 public:
@@ -40,10 +40,14 @@ protected:
     QString Vector3D2String(QVector<float> &points, int index);
     QString Vector2D2String(QVector<float> &points, int index);
 protected slots:
-    void openFileBrowser();
     void loadModelCH();
-    void openSHADialog();
     void LoadWaterMarkedModel();
+    void ExtractWaterMark();
+    //open dialog
+    void openFileBrowser();
+    void openSHADialog();
+    void openExtractSHADialog();
+
     void showError(QString& errorMessage)
     {
         QMessageBox::critical(this, "Error", errorMessage);
@@ -60,6 +64,7 @@ private:
     QMenu *mainMenu;
     QMenu *editMenu;
     QMenu *hashMenu;
+    QMenu *extractMenu;
 
     QAction *openAction;
     QAction *newAction;
@@ -67,8 +72,10 @@ private:
     QAction *chAction;
 
     QAction *shaAction;
+    QAction *extractHashAction;
 
     HashDialog *hashDialog;
+    ExtractHashDialog *extractHashDialog;
 
     QLabel *listComp;
     QLabel *lbl;
@@ -87,7 +94,7 @@ private:
         NT_Node,
         NT_ENode
     };
-
+    
 
 };
 #endif // WIDGET_H

@@ -28,7 +28,7 @@ public:
     QMatrix4x4 projection();
 
     QVector3D position();
-
+    float speedTimes = 1.0f;
 private:
     void doMovement();
     void doRotation();

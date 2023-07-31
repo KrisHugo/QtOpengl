@@ -65,7 +65,7 @@ void Camera::doMovement()
     lastTime = currentTime;
 
     const QVector3D cameraRight = QVector3D::crossProduct(cameraFront, cameraUp).normalized();
-    const float cameraSpeed = 0.5f / deltaTime;
+    const float cameraSpeed = (5.0f * speedTimes) / deltaTime;
     if (moveDirections.value(MoveDirection::Direction_Forward) ) {
         cameraPos += cameraFront * cameraSpeed;
     }
@@ -89,3 +89,4 @@ void Camera::doRotation()
 
     cameraFront = front.normalized();
 }
+

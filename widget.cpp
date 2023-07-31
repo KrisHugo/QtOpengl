@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QCheckBox>
 #include "ObjLoader.h"
-
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
@@ -44,10 +43,15 @@ Widget::Widget(QWidget *parent)
     connect(shaAction, SIGNAL(triggered(bool)), this, SLOT(openSHADialog()));
     hashMenu->addAction(shaAction);
 
+    extractMenu = new QMenu("哈希提取操作");
+    extractHashAction = new QAction("SHA256");
+    connect(extractHashAction, SIGNAL(triggered(bool)), this, SLOT(openExtractSHADialog()));
+    extractMenu->addAction(extractHashAction);
 
     mainMenuBar->addMenu(mainMenu);
     mainMenuBar->addMenu(editMenu);
     mainMenuBar->addMenu(hashMenu);
+    mainMenuBar->addMenu(extractMenu);
     //2.1 工具栏
 
     //2.2 主体
@@ -158,6 +162,22 @@ void Widget::openSHADialog()
     qDebug("生成Hash窗口");
 }
 
+void Widget::openExtractSHADialog(){
+    if(loadedObj == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未加载模型文件"),
+                              QMessageBox::Apply);
+        return;
+    }
+    QString objStr = loadedObj->file;
+    extractHashDialog = new ExtractHashDialog(this, HashType::SHA256, loadedObj);
+//    connect(hashDialog, SIGNAL(hashStringGenerated(QString&)),
+//            this, SLOT(saveHashString(QString&)));
+    connect(extractHashDialog, SIGNAL(HashStringExtract()), this, SLOT(ExtractWaterMark()));
+    extractHashDialog->show();
+    qDebug("生成提取Hash窗口");
+}
 void Widget::loadModelCH(){
     if(loadedObj == nullptr) {
         QMessageBox::critical(this,
@@ -235,13 +255,6 @@ bool Widget::loadOnDetail(ObjData &objData){
     return true;
 }
 
-QString Widget::Vector3D2String(QVector<float> &points, int index){
-    return QString("(%1,%2,%3)").arg(QString::number(points[index]), QString::number(points[index + 1]), QString::number(points[index + 2]));
-}
-QString Widget::Vector2D2String(QVector<float> &points, int index){
-    return QString("(%1,%2)").arg(QString::number(points[index]), QString::number(points[index + 1]));
-}
-
 void Widget::LoadWaterMarkedModel(){
     if(loadedObj == nullptr) {
         QMessageBox::critical(this,
@@ -250,16 +263,45 @@ void Widget::LoadWaterMarkedModel(){
                               QMessageBox::Apply);
         return;
     }
-    loadedObj->InsertWatermarks(loadedObj->chData.vertices, loadedObj->chData.nVertices, loadedObj->fileHash.toStdString());
+    if(loadedObj->chData.vertices == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未生成简化模型"),
+                              QMessageBox::Apply);
+        return;
+    }
+    std::string watermark = loadedObj->fileHash.toStdString();
+    loadedObj->InsertWatermarks(loadedObj->chData.vertices, loadedObj->chData.nVertices, watermark);
     openGL->loadModel(*loadedObj, true);
 }
 
+void Widget::ExtractWaterMark(){
+    if(loadedObj == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未加载模型文件"),
+                              QMessageBox::Apply);
+        return;
+    }
+    if(loadedObj->chData.vertices == nullptr) {
+        QMessageBox::critical(this,
+                              tr("警告"),
+                              tr("还未生成简化模型"),
+                              QMessageBox::Apply);
+        return;
+    }
+    std::string watermark;
+    loadedObj->ExtractWatermark(loadedObj->chData.vertices, loadedObj->chData.nVertices, watermark);
 
+}
 
-
-
-
-
+//for display
+QString Widget::Vector3D2String(QVector<float> &points, int index){
+    return QString("(%1,%2,%3)").arg(QString::number(points[index]), QString::number(points[index + 1]), QString::number(points[index + 2]));
+}
+QString Widget::Vector2D2String(QVector<float> &points, int index){
+    return QString("(%1,%2)").arg(QString::number(points[index]), QString::number(points[index + 1]));
+}
 
 
 

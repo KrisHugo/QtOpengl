@@ -92,8 +92,9 @@ public:
     QOpenGLBuffer vbo;
     QOpenGLBuffer ebo;
     ConvhullData chData;
-    void InsertWatermarks(ch_vertex *vertices, int nVertex, std::string watermark, int _alpha = 13);
     void InitializeCHData();
+    void InsertWatermarks(ch_vertex *vertices, int nVertex, std::string &watermark, int _alpha = 13, int _wmLen = 2);
+    void ExtractWatermark(ch_vertex *vertices, int nVertex, std::string &watermark, int _alpha = 13, int _wmLen = 2);
 };
 
 

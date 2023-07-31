@@ -8,6 +8,8 @@
 #include <QtMath>
 #include <QElapsedTimer>
 #include <QOpenGLDebugLogger>
+
+//test cude vertices
 static const float vertices[] = {
     // positions          // normals           // texture coords
     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -84,15 +86,18 @@ void OpenGLWidget::initializeGL()
     showNormal();
     setGeometry(0, 0, 800, 600);
 
-    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_DEPTH_TEST);
+//    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+    // skybox
+    initSkybox();
 //    initializeCubeGeometry();
 //    initializeLampGeometry();
-    initializeShaders();
+    initializeObjShaders();
 
-    container = initializeTexture(":/container2.png");
-    container_specular = initializeTexture(":/container2_specular.png");
+    container = loadTexture(":/container2.png", true);
+    container_specular = loadTexture(":/container2_specular.png", true);
 
 
     QOpenGLDebugLogger logger;
@@ -104,15 +109,25 @@ void OpenGLWidget::resizeGL(int w, int h)
 {
     camera.setViewport(w, h);
     glViewport(0, 0, w, h);
-
-    pMatrix_.setToIdentity();
-    pMatrix_.perspective(45, float(w)/h, 0.01f, 100.0f);
+    camera.setViewport(w, h);
+    projection = camera.projection();
 }
 
 void OpenGLWidget::paintGL()
 {
+    if(lineMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //update data
     camera.update();
+    projection = camera.projection();
+    view = camera.view();
+    //render
+    //test cude render
 //    static constexpr QVector3D cubePositions[] = {
 //        QVector3D( 0.0f,  0.0f,  0.0f),
 //        QVector3D( 2.0f,  5.0f, -15.0f),
@@ -136,6 +151,9 @@ void OpenGLWidget::paintGL()
     if(loadingFlag){
         drawModel();
     }
+
+    // draw skybox at last
+//    drawSkybox();
 
     update();
 }
@@ -163,10 +181,9 @@ void OpenGLWidget::SwitchMode(int newMode)
 
 void OpenGLWidget::drawModel(){
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
-    QMatrix4x4 vMatrix = camera.view();
-
-    objRender.render(f, pMatrix_, vMatrix, camera.position(), lineMode);
+    objRender.render(f, projection, view, camera.position(), lineMode);
 }
+
 
 
 void OpenGLWidget::slotTimeout()
@@ -243,6 +260,7 @@ void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+
     static QPointF lastPos = event->pos();
     QPointF currentPos = event->pos();
 
@@ -257,9 +275,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 
     camera.rotate(xoffset, yoffset);
 
-
     QWidget::mouseMoveEvent(event);
-
 
 }
 
@@ -306,7 +322,7 @@ void OpenGLWidget::initializeLampGeometry()
     glEnableVertexAttribArray(0);
 }
 
-void OpenGLWidget::initializeShaders()
+void OpenGLWidget::initializeObjShaders()
 {
     if (!objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vcube.vsh")
         || !objRender.objProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/fcube.fsh")
@@ -328,19 +344,18 @@ void OpenGLWidget::initializeShaders()
     }
 }
 
-QOpenGLTexture *OpenGLWidget::initializeTexture(const QString &path)
+QOpenGLTexture *OpenGLWidget::loadTexture(const QString &path, bool isRepeat)
 {
     QOpenGLTexture *texture = new QOpenGLTexture(QImage(path).mirrored());
-
     // Set nearest filtering mode for texture minification
-    texture->setMinificationFilter(QOpenGLTexture::Nearest);
-
+    texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     // Set bilinear filtering mode for texture magnification
     texture->setMagnificationFilter(QOpenGLTexture::Linear);
-
-    // Wrap texture coordinates by repeating
-    // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
-    texture->setWrapMode(QOpenGLTexture::Repeat);
+    if(isRepeat){
+        // Wrap texture coordinates by repeating
+        // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
+        texture->setWrapMode(QOpenGLTexture::Repeat);
+    }
 
     return texture;
 }
@@ -353,8 +368,6 @@ void OpenGLWidget::drawCube(const QVector3D &position, float angle)
     QMatrix4x4 model;
     model.translate(position);
     model.rotate(angle, QVector3D(1.0f, 0.3f, 0.5f));
-    QMatrix4x4 view = camera.view();
-    QMatrix4x4 projection = camera.projection();
 
     cubeProgram.setUniformValue("model", model);
     cubeProgram.setUniformValue("view", view);
@@ -389,9 +402,6 @@ void OpenGLWidget::drawLamp()
     QMatrix4x4 model;
     model.translate(lightPos);
     model.scale({0.2f, 0.2f, 0.2f});
-
-    QMatrix4x4 view = camera.view();
-    QMatrix4x4 projection = camera.projection();
 
     lampProgram.setUniformValue("model", model);
     lampProgram.setUniformValue("view", view);

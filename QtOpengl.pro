@@ -12,16 +12,19 @@ SOURCES += \
     ObjRender.cpp \
     OpenGLWidgets.cpp \
 	binarymask.cpp \
+	extractWidget.cpp \
 	hashWidget.cpp \
     main.cpp \
     widget.cpp \
     camera.cpp \
 
 HEADERS += \
+	HashType.h \
     ObjData.h \
     ObjLoader.h \
     ObjRender.h \
     OpenGLWidgets.h \
+	extractWidget.h \
 	hashWidget.h \
     widget.h \
     camera.h \

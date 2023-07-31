@@ -10,11 +10,7 @@
 #include <QPushButton>
 #include <QTextEdit>
 #include <QVBoxLayout>
-// 定义一个枚举类型
-enum HashType {
-    SHA256,
-    CRC,
-};
+#include "HashType.h"
 
 class HashDialog : public QDialog
 {

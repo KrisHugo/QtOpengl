@@ -23,9 +23,8 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
     points << vertPoints_ << texturePoints_ << normalPoints_ ;
     qDebug() << "Render Initialize Checked:" << points.size();
 
-
     curData->vbo.create();
-    curData->ebo.create();
+//    curData->ebo.create();
     //VBO
     curData->vbo.bind();
     curData->vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -46,7 +45,7 @@ void ObjRender::initsize(ObjData &objData, bool isCH)
     curData->transform.translate(QVector3D(0.0f,  0.0f,  0.0f));
 }
 
-void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatrix4x4 &viewM, QVector3D cameraLoc, bool mode)
+void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projection, QMatrix4x4 &view, QVector3D position, bool mode)
 {
     if(curData == nullptr){
         qDebug("Unloaded");
@@ -57,10 +56,10 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.bind();//shader selected
     curData->vbo.bind();// buffer selected
     // shader
-    objProgram.setUniformValue("projection", projectionM);
-    objProgram.setUniformValue("view", viewM);
+    objProgram.setUniformValue("projection", projection);
+    objProgram.setUniformValue("view", view);
     objProgram.setUniformValue("model", curData->transform);
-    objProgram.setUniformValue("viewPos", cameraLoc);
+    objProgram.setUniformValue("viewPos", position);
 
     f->glActiveTexture(GL_TEXTURE0);
     objTexture->bind();
@@ -84,7 +83,8 @@ void ObjRender::render(QOpenGLExtraFunctions *f, QMatrix4x4 &projectionM, QMatri
     objProgram.setAttributeBuffer(1, GL_FLOAT, vertPoints_.size() * sizeof(GLfloat), 2, 2 * sizeof(GLfloat)); //tpoints
     objProgram.setAttributeBuffer(2, GL_FLOAT, (vertPoints_.size() + texturePoints_.size()) * sizeof(GLfloat), 3, 3 * sizeof(GLfloat)); //npoints
 
-    f->glDrawArrays((mode? GL_LINE_LOOP : GL_TRIANGLES), 0, vertPoints_.count() / 3);
+//    f->glDrawArrays((mode? GL_LINE_LOOP : GL_TRIANGLES), 0, vertPoints_.count() / 3);
+    f->glDrawArrays(GL_TRIANGLES, 0, vertPoints_.count() / 3);
     //end here
     objProgram.disableAttributeArray(0);
     objProgram.disableAttributeArray(1);
