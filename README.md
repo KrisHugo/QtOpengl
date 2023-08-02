@@ -23,6 +23,11 @@ GL_enum : see in "./Readme/GL_enum.jpg"
 
 <!-- <img src="./README/GLenum.png" style="zoom:100%;" /> -->
 
+## for compute the normal vertex, we need to know
+[CSDN-关于顶点法线和面法线的区别以及计算思路](https://blog.csdn.net/bb_sy_w/article/details/122826036)
+- but here's the problem, if we try to compute the normal vertex, we have to cost more resources to do it. So I decided it as a secondary task.
+
+
 ## 针对被渲染物体的整体控制思路
 - 每个顶点在加入vertex shader中渲染时, 需要计算顶点的实际渲染坐标, 可以通过输入四个参数进行控制: projection, view, viewPos, model.
 - 其中projection和view以及viewPos(或者可以直接说camera.position)控制3D物体渲染到摄像头上的2D投影坐标, model是每个顶点所归属的3d模型的中心位置, 四个参数与顶点vertex的属性运算之后, 就可以确定实际渲染的点在3d空间中的位置，以及正确的渲染在摄像机的投影位置.
